@@ -1,7 +1,8 @@
-from typing import List, Tuple
+from typing import List, Tuple, Dict
 from models.operating_room import OperatingRoom
 from models.surgery import Surgery
 from algo.algo_helpers import intersection_size
+from loguru import logger
 
 """
 # General Idea
@@ -23,20 +24,48 @@ def find_suitable_rooms_for_surgery(surgery: Surgery, list_of_rooms: List[Operat
     return suitable_rooms
 
 
-def find_suitable_rooms_for_special_surgeries(list_of_surgeries: List[Surgery], list_of_rooms: List[OperatingRoom]) -> dict:
+def find_suitable_rooms_for_special_surgeries(list_of_surgeries: List[Surgery],
+                                              list_of_rooms: List[OperatingRoom]) -> Dict[Surgery, List[OperatingRoom]]:
     special_surgery_mapping = dict()
     for surgery in list_of_surgeries:
-        special_surgery_mapping[surgery.name] = find_suitable_rooms_for_surgery(surgery, list_of_rooms)
+        special_surgery_mapping[surgery] = find_suitable_rooms_for_surgery(surgery, list_of_rooms)
     return special_surgery_mapping
 
+def build_remaining_surgery_mapping(surgery_list: List[Surgery], 
+                                    mapping: Dict[Surgery, List[OperatingRoom]], 
+                                    list_of_rooms: List[OperatingRoom]):
+    remainder_mapping = dict()
+    surgeries_without_special_requirements = [surgery for surgery in surgery_list if not surgery.requirements]
+    for surgery in surgeries_without_special_requirements:
+        remainder_mapping[surgery] = list_of_rooms
+    remainder_mapping.update(mapping)
+    return remainder_mapping
 
-def assign_special_surgeries(surgery_list: List[Surgery], list_of_rooms: List[OperatingRoom]):
+
+
+def _only_one_available_option(surgery: Surgery, map_dict: dict):
+    return len(map_dict[surgery]) == 1
+
+def assign_special_surgeries(surgery_list: List[Surgery], list_of_rooms: List[OperatingRoom]) -> Dict[Surgery, List[OperatingRoom]]:
+    logger.debug(f"[Assignment] Assigning {len(surgery_list)} surgeries to operating rooms")
     surgeries_with_special_requirements = [surgery for surgery in surgery_list if surgery.requirements]
     mapping = find_suitable_rooms_for_special_surgeries(surgeries_with_special_requirements, list_of_rooms)
+    scheduled_surgeries = []
+    for surgery in mapping:
+        if _only_one_available_option(surgery, mapping):
+            mapping[surgery][0].surgeries_to_schedule.append(surgery)
+            logger.debug(f"[1:1] Assigned surgery {surgery} to room {mapping[surgery][0]}")
+            scheduled_surgeries.append(surgery)
+    
+    [mapping.pop(surgery) for surgery in scheduled_surgeries]
+
+    mapping = build_remaining_surgery_mapping(surgery_list, mapping, list_of_rooms)
     return mapping
 
 
-def disperse_surgeries_evenly():
+def disperse_surgeries_evenly(mapping: Dict[Surgery, List[OperatingRoom]], list_of_rooms: List[OperatingRoom]):
+    logger.debug(f"[Assignment] Optimization step, assigning remaining {len(mapping)} surgeries to operating rooms")
+
     pass
 
 if __name__ == "__main__":
@@ -50,5 +79,5 @@ if __name__ == "__main__":
     or_list = [o, p]
     surgery_list = [a, b, c]
 
-    res = assign_special_surgeries(surgery_list, or_list)
-    print(res)
+    remaineder = assign_special_surgeries(surgery_list, or_list)
+    disperse_surgeries_evenly(remaineder, or_list)
