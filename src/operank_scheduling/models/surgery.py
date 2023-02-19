@@ -5,3 +5,6 @@ class Surgery():
         self.name = name
         self.duration = duration_in_minutes
         self.requirements = requirements
+    
+    def __repr__(self) -> str:
+        return f"{self.name}({self.duration}m)"
