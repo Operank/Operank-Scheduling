@@ -1,4 +1,4 @@
-from typing import List, Tuple, Dict
+from typing import List, Dict
 from models.operating_room import OperatingRoom
 from models.surgery import Surgery
 from algo.algo_helpers import intersection_size
@@ -40,8 +40,6 @@ def build_remaining_surgery_mapping(surgery_list: List[Surgery],
         remainder_mapping[surgery] = list_of_rooms
     remainder_mapping.update(mapping)
     return remainder_mapping
-
-
 
 def _only_one_available_option(surgery: Surgery, map_dict: dict):
     return len(map_dict[surgery]) == 1
