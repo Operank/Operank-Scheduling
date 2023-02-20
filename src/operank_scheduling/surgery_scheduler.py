@@ -41,11 +41,11 @@ def build_remaining_surgery_mapping(surgery_list: List[Surgery],
     remainder_mapping.update(mapping)
     return remainder_mapping
 
-def _only_one_available_option(surgery: Surgery, map_dict: dict):
-    return len(map_dict[surgery]) == 1
+def _only_one_available_option(surgery: Surgery, possible_rooms: dict):
+    return len(possible_rooms[surgery]) == 1
 
 def assign_special_surgeries(surgery_list: List[Surgery], list_of_rooms: List[OperatingRoom]) -> Dict[Surgery, List[OperatingRoom]]:
-    logger.debug(f"[Assignment] Assigning {len(surgery_list)} surgeries to operating rooms")
+    logger.info(f"[Assignment] Assigning {len(surgery_list)} surgeries to operating rooms")
     surgeries_with_special_requirements = [surgery for surgery in surgery_list if surgery.requirements]
     mapping = find_suitable_rooms_for_special_surgeries(surgeries_with_special_requirements, list_of_rooms)
     scheduled_surgeries = []
@@ -62,9 +62,11 @@ def assign_special_surgeries(surgery_list: List[Surgery], list_of_rooms: List[Op
 
 
 def disperse_surgeries_evenly(mapping: Dict[Surgery, List[OperatingRoom]], list_of_rooms: List[OperatingRoom]):
-    logger.debug(f"[Assignment] Optimization step, assigning remaining {len(mapping)} surgeries to operating rooms")
-
+    logger.info(f"[Assignment] Optimization step, assigning remaining {len(mapping)} surgeries to operating rooms")
+    # TODO:
+    #   Build model to balance the surgeries per room, such that the total duration in minutes is equal
     pass
+
 
 if __name__ == "__main__":
     a = Surgery(name="a", duration_in_minutes=60, requirements=[])
