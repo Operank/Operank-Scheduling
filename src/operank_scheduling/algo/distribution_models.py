@@ -18,13 +18,6 @@ def create_data_dict() -> Dict:
     data['max_total_duration'] = max(surgery_durations) * len(surgery_durations) // operating_rooms
     return data
 
-def lazy_permute(in_lst: list) -> list:
-    out_lst = list()
-    for i in range(len(in_lst)):
-        for j in range(i+1, len(in_lst)):
-            out_lst.append( (in_lst[i], in_lst[j]) )
-    return out_lst
-
 
 def main():
     data = create_data_dict()
