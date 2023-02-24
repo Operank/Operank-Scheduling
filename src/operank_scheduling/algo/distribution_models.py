@@ -1,5 +1,4 @@
 from ortools.sat.python import cp_model
-from ortools.linear_solver import pywraplp
 
 from typing import Dict, List, Any
 from math import factorial
@@ -132,41 +131,33 @@ def distribute_surgeries_to_days(rooms: List[OperatingRoom]):
     """
     for room in rooms:
         data = restructure_day_optimization_data(room)
-        solver = pywraplp.Solver.CreateSolver('SCIP')
+        model = cp_model.CpModel()
 
         # Variables ---------------------------------------------
         # x[i, j] = 1 if surgery i is assigned to **day** j.
         x = {}
         for i in data["surgeries"]:
             for j in data["days"]:
-                x[(i, j)] = solver.IntVar(0, 1, f"x_{i}_{j}")
+                x[(i, j)] = model.NewIntVar(0, 1, f"x_{i}_{j}")
 
         # y[j] = 1 if day `j` is used.
         y = {}
         for j in data["days"]:
-            y[j] = solver.IntVar(0, 1, f"y_{j}")
+            y[j] = model.NewIntVar(0, 1, f"y_{j}")
         # End Variables -----------------------------------------
 
         # Constraints -------------------------------------------
         # Each surgery must be scheduled in one day only.
         for surgery in data["surgeries"]:
-            solver.Add(sum(x[surgery, day] for day in data["days"]) == 1)
-
-        # for day in data["days"]:
-        #     if sum(x[(surgery, day)] for surgery in data["surgeries"]) > 0:
-        #         y[j] = 1
-        # # If a surgery is assigned to day `j` it must set the flag
-        # for day in data["days"]:
-        #     model.Add(
-        #         y[day] == 1
-        #         if (sum(x[surgery, day] for surgery in data["surgeries"]) > 0)
-        #         else 0
-        #     )
+            model.Add(sum(x[surgery, day] for day in data["days"]) == 1)
 
         # The daily duration can't exceed the maximum (work day limit)
         for day in data["days"]:
-            solver.Add(
-                sum(x[surgery, day] * data['surgery_durations'][surgery] for surgery in data["surgeries"])
+            model.Add(
+                sum(
+                    x[surgery, day] * data["surgery_durations"][surgery]
+                    for surgery in data["surgeries"]
+                )
                 <= data["daily_limit"] * y[day]
             )
         # End Constraints ---------------------------------------
@@ -175,18 +166,19 @@ def distribute_surgeries_to_days(rooms: List[OperatingRoom]):
         def days_used():
             return [y[day] for day in data["days"]]
 
-        solver.Minimize(sum(days_used()))
-        status = solver.Solve()
+        model.Minimize(sum(days_used()))
+        solver = cp_model.CpSolver()
+        status = solver.Solve(model)
 
-        if status == pywraplp.Solver.OPTIMAL:
+        if status == cp_model.OPTIMAL:
             print(f"Room: {room}")
             surgeries = room.surgeries_to_schedule
             for day in data["days"]:
-                if y[day].solution_value():
+                if solver.Value(y[day]):
                     print(f"Day: {day}")
                     for surgery_idx in data["surgeries"]:
                         surgery = surgeries[surgery_idx]
-                        if x[surgery_idx, day].solution_value() > 0:
+                        if solver.Value(x[surgery_idx, day]) > 0:
                             print(f"\tSurgery: {surgery}")
 
 
