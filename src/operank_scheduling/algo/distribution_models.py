@@ -84,8 +84,8 @@ def distribute_surgeries_to_operating_rooms(
     status = solver.Solve(model)
 
     if status == cp_model.OPTIMAL:
-        print(f"Total surgeries to schedule: {len(data['surgeries'])}")
-        print(f"Optimal difference (lower is better): {solver.ObjectiveValue()}")
+        logger.info(f"Total surgeries to schedule: {len(data['surgeries'])}")
+        logger.debug(f"Optimal difference (lower is better): {solver.ObjectiveValue()}")
         for operating_room_idx in data["rooms"]:
             operating_room = rooms[operating_room_idx]
             total_duration = 0
@@ -109,17 +109,28 @@ def distribute_surgeries_to_operating_rooms(
             f"The solution status was deemed {solver.StatusName(status)}"
         )
 
+    def distribute_surgeries_to_days(rooms: List[OperatingRoom], max_days=7):
+        """
+        For each room, build a model that will assign operations to days such that:
+            1. The total daily surgery duration will be lower than the daily operating hours
+            2. (Speculation) each day has at least two kinds of surgery (short and medium, for ex.)
+        """
+        pass
+
 
 if __name__ == "__main__":
     a = Surgery(name="a", duration_in_minutes=60, requirements=[])
     b = Surgery(name="b", duration_in_minutes=60, requirements=["microscope"])
     c = Surgery(name="c", duration_in_minutes=120, requirements=["microscope", "xray"])
-    # d = Surgery(name="d", duration_in_minutes=120, requirements=["microscope", "xray"])
+    d = Surgery(name="d", duration_in_minutes=120, requirements=["microscope", "xray"])
+    e = Surgery(name="d", duration_in_minutes=300, requirements=["microscope", "xray"])
 
     o = OperatingRoom(id="OR1", properties=["microscope", "xray", "ct"])
     p = OperatingRoom(id="OR2", properties=["microscope", "ct"])
+    r = OperatingRoom(id="OR2", properties=["microscope", "ct"])
+    q = OperatingRoom(id="OR2", properties=["microscope", "ct"])
 
-    or_list = [o, p]
-    surgery_list = [a, b, c]
+    or_list = [o, p, r, q]
+    surgery_list = [a, b, c, d, e]
 
     distribute_surgeries_to_operating_rooms(surgery_list, or_list)
