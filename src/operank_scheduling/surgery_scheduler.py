@@ -105,12 +105,15 @@ if __name__ == "__main__":
     c = Surgery(name="c", duration_in_minutes=300, requirements=[])
     d = Surgery(name="d", duration_in_minutes=400, requirements=[])
     e = Surgery(name="e", duration_in_minutes=300, requirements=[])
+    f = Surgery(name="f", duration_in_minutes=30, requirements=[])
+    g = Surgery(name="g", duration_in_minutes=60, requirements=[])
+    h = Surgery(name="h", duration_in_minutes=120, requirements=[])
 
     o = OperatingRoom(id="OR1", properties=["microscope", "xray", "ct"])
     p = OperatingRoom(id="OR2", properties=["microscope", "ct"])
 
     or_list = [o, p]
-    surgery_list = [a, b, c, d, e]
+    surgery_list = [a, b, c, d, e, f, g, h]
 
     remaineder = assign_special_surgeries(surgery_list, or_list)
     disperse_surgeries_evenly(remaineder)

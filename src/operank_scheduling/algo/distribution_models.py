@@ -171,15 +171,16 @@ def distribute_surgeries_to_days(rooms: List[OperatingRoom]):
         status = solver.Solve(model)
 
         if status == cp_model.OPTIMAL:
-            print(f"Room: {room}")
+            logger.debug(f"[Optimization] For Room: {room}")
             surgeries = room.surgeries_to_schedule
             for day in data["days"]:
                 if solver.Value(y[day]):
-                    print(f"Day: {day}")
+                    out_str = f"Day: {day} | "
                     for surgery_idx in data["surgeries"]:
                         surgery = surgeries[surgery_idx]
                         if solver.Value(x[surgery_idx, day]) > 0:
-                            print(f"\tSurgery: {surgery}")
+                            out_str += f" {surgery}"
+                    logger.debug(out_str)
 
 
 if __name__ == "__main__":
