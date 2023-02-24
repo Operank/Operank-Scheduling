@@ -86,19 +86,24 @@ def assign_special_surgeries(
 
 
 def disperse_surgeries_evenly(
-    mapping: Dict[Surgery, List[OperatingRoom]], list_of_rooms: List[OperatingRoom]
+    mapping: Dict[Surgery, List[OperatingRoom]]
 ):
     logger.info(
         f"[Assignment] Optimization step, assigning remaining {len(mapping)} surgeries to operating rooms"
     )
-    distribute_surgeries_to_operating_rooms()
+    surgery_list = list()
+    rooms = set()
+    for surgery in mapping:
+        surgery_list.append(surgery)
+        [rooms.add(room) for room in mapping[surgery]]
+    distribute_surgeries_to_operating_rooms(surgery_list, list(rooms))
     pass
 
 
 if __name__ == "__main__":
     a = Surgery(name="a", duration_in_minutes=60, requirements=[])
-    b = Surgery(name="b", duration_in_minutes=60, requirements=["microscope"])
-    c = Surgery(name="c", duration_in_minutes=60, requirements=["microscope", "xray"])
+    b = Surgery(name="b", duration_in_minutes=120, requirements=[])
+    c = Surgery(name="c", duration_in_minutes=60, requirements=[])
 
     o = OperatingRoom(id="OR1", properties=["microscope", "xray", "ct"])
     p = OperatingRoom(id="OR2", properties=["microscope", "ct"])
@@ -107,4 +112,4 @@ if __name__ == "__main__":
     surgery_list = [a, b, c]
 
     remaineder = assign_special_surgeries(surgery_list, or_list)
-    disperse_surgeries_evenly(remaineder, or_list)
+    disperse_surgeries_evenly(remaineder)
