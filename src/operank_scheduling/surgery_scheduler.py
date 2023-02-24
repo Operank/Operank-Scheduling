@@ -2,7 +2,7 @@ from typing import List, Dict
 from models.operating_room import OperatingRoom
 from models.surgery import Surgery
 from algo.algo_helpers import intersection_size
-from algo.distribution_models import distribute_surgeries_to_operating_rooms
+from algo.distribution_models import distribute_surgeries_to_operating_rooms, distribute_surgeries_to_days
 from loguru import logger
 
 """
@@ -97,19 +97,21 @@ def disperse_surgeries_evenly(
         surgery_list.append(surgery)
         [rooms.add(room) for room in mapping[surgery]]
     distribute_surgeries_to_operating_rooms(surgery_list, list(rooms))
-    pass
 
 
 if __name__ == "__main__":
-    a = Surgery(name="a", duration_in_minutes=60, requirements=[])
-    b = Surgery(name="b", duration_in_minutes=120, requirements=[])
-    c = Surgery(name="c", duration_in_minutes=60, requirements=[])
+    a = Surgery(name="a", duration_in_minutes=300, requirements=[])
+    b = Surgery(name="b", duration_in_minutes=200, requirements=[])
+    c = Surgery(name="c", duration_in_minutes=300, requirements=[])
+    d = Surgery(name="d", duration_in_minutes=400, requirements=[])
+    e = Surgery(name="e", duration_in_minutes=300, requirements=[])
 
     o = OperatingRoom(id="OR1", properties=["microscope", "xray", "ct"])
     p = OperatingRoom(id="OR2", properties=["microscope", "ct"])
 
     or_list = [o, p]
-    surgery_list = [a, b, c]
+    surgery_list = [a, b, c, d, e]
 
     remaineder = assign_special_surgeries(surgery_list, or_list)
     disperse_surgeries_evenly(remaineder)
+    distribute_surgeries_to_days(or_list)

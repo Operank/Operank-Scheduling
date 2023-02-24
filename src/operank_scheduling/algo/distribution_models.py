@@ -1,4 +1,6 @@
 from ortools.sat.python import cp_model
+from ortools.linear_solver import pywraplp
+
 from typing import Dict, List, Any
 from math import factorial
 from loguru import logger
@@ -109,13 +111,83 @@ def distribute_surgeries_to_operating_rooms(
             f"The solution status was deemed {solver.StatusName(status)}"
         )
 
-    def distribute_surgeries_to_days(rooms: List[OperatingRoom], max_days=7):
-        """
-        For each room, build a model that will assign operations to days such that:
-            1. The total daily surgery duration will be lower than the daily operating hours
-            2. (Speculation) each day has at least two kinds of surgery (short and medium, for ex.)
-        """
-        pass
+
+def restructure_day_optimization_data(room: OperatingRoom, work_day_in_minutes=480):
+    data = dict()
+    data["surgeries"] = list(range(len(room.surgeries_to_schedule)))
+    data["surgery_durations"] = [
+        surgery.duration for surgery in room.surgeries_to_schedule
+    ]
+    max_days = 1 + (sum(data["surgery_durations"]) // work_day_in_minutes)
+    data["days"] = list(range(max_days + 1))
+    data["daily_limit"] = work_day_in_minutes
+    return data
+
+
+def distribute_surgeries_to_days(rooms: List[OperatingRoom]):
+    """
+    For each room, build a model that will assign operations to days such that:
+        1. The total daily surgery duration will be lower than the daily operating hours
+        2. (Speculation) each day has at least two kinds of surgery (short and medium, for ex.)
+    """
+    for room in rooms:
+        data = restructure_day_optimization_data(room)
+        solver = pywraplp.Solver.CreateSolver('SCIP')
+
+        # Variables ---------------------------------------------
+        # x[i, j] = 1 if surgery i is assigned to **day** j.
+        x = {}
+        for i in data["surgeries"]:
+            for j in data["days"]:
+                x[(i, j)] = solver.IntVar(0, 1, f"x_{i}_{j}")
+
+        # y[j] = 1 if day `j` is used.
+        y = {}
+        for j in data["days"]:
+            y[j] = solver.IntVar(0, 1, f"y_{j}")
+        # End Variables -----------------------------------------
+
+        # Constraints -------------------------------------------
+        # Each surgery must be scheduled in one day only.
+        for surgery in data["surgeries"]:
+            solver.Add(sum(x[surgery, day] for day in data["days"]) == 1)
+
+        # for day in data["days"]:
+        #     if sum(x[(surgery, day)] for surgery in data["surgeries"]) > 0:
+        #         y[j] = 1
+        # # If a surgery is assigned to day `j` it must set the flag
+        # for day in data["days"]:
+        #     model.Add(
+        #         y[day] == 1
+        #         if (sum(x[surgery, day] for surgery in data["surgeries"]) > 0)
+        #         else 0
+        #     )
+
+        # The daily duration can't exceed the maximum (work day limit)
+        for day in data["days"]:
+            solver.Add(
+                sum(x[surgery, day] * data['surgery_durations'][surgery] for surgery in data["surgeries"])
+                <= data["daily_limit"] * y[day]
+            )
+        # End Constraints ---------------------------------------
+
+        # Optimization ------------------------------------------
+        def days_used():
+            return [y[day] for day in data["days"]]
+
+        solver.Minimize(sum(days_used()))
+        status = solver.Solve()
+
+        if status == pywraplp.Solver.OPTIMAL:
+            print(f"Room: {room}")
+            surgeries = room.surgeries_to_schedule
+            for day in data["days"]:
+                if y[day].solution_value():
+                    print(f"Day: {day}")
+                    for surgery_idx in data["surgeries"]:
+                        surgery = surgeries[surgery_idx]
+                        if x[surgery_idx, day].solution_value() > 0:
+                            print(f"\tSurgery: {surgery}")
 
 
 if __name__ == "__main__":
@@ -127,10 +199,9 @@ if __name__ == "__main__":
 
     o = OperatingRoom(id="OR1", properties=["microscope", "xray", "ct"])
     p = OperatingRoom(id="OR2", properties=["microscope", "ct"])
-    r = OperatingRoom(id="OR2", properties=["microscope", "ct"])
-    q = OperatingRoom(id="OR2", properties=["microscope", "ct"])
 
-    or_list = [o, p, r, q]
+    or_list = [o, p]
     surgery_list = [a, b, c, d, e]
 
     distribute_surgeries_to_operating_rooms(surgery_list, or_list)
+    distribute_surgeries_to_days(or_list)
