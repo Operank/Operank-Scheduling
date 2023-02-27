@@ -111,9 +111,12 @@ if __name__ == "__main__":
 
     o = OperatingRoom(id="OR1", properties=["microscope", "xray", "ct"])
     p = OperatingRoom(id="OR2", properties=["microscope", "ct"])
+    r = OperatingRoom(id="OR3", properties=["microscope", "ct"])
 
-    or_list = [o, p]
-    surgery_list = [a, b, c, d, e, f, g, h]
+    # or_list = [o, p, r]
+    # surgery_list = [a, b, c, d, e, f, g, h]*10
+    surgery_list = [Surgery(name=f"s{i}", duration_in_minutes=60 * ((i % 3) + 1), requirements=[]) for i in range(90)]
+    or_list = [OperatingRoom(id=f"o{i}", properties=[]) for i in range(15)]
 
     remaineder = assign_special_surgeries(surgery_list, or_list)
     disperse_surgeries_evenly(remaineder)

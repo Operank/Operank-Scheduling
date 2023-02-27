@@ -181,6 +181,8 @@ def distribute_surgeries_to_days(rooms: List[OperatingRoom]):
                         if solver.Value(x[surgery_idx, day]) > 0:
                             out_str += f" {surgery}"
                     logger.debug(out_str)
+        else:
+            logger.warning(f"[Optimization] Failed to solve, status: {status}")
 
 
 if __name__ == "__main__":
