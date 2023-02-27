@@ -5,6 +5,7 @@ from math import factorial
 from loguru import logger
 
 from .algo_helpers import lazy_permute
+from .intermediate_solutions_cb import SurgeryToRoomSolutionCallback
 from models.operating_room import OperatingRoom
 from models.surgery import Surgery
 
@@ -82,7 +83,9 @@ def distribute_surgeries_to_operating_rooms(
     # Optimization ------------------------------------------
     model.Minimize(sum(absolute_length_differences))
     solver = cp_model.CpSolver()
-    status = solver.Solve(model)
+    solution_cb = SurgeryToRoomSolutionCallback(data, surgeries, rooms, x)
+    solver.parameters.enumerate_all_solutions = True
+    status = solver.Solve(model, solution_cb)
 
     if status == cp_model.OPTIMAL:
         logger.info(f"Total surgeries to schedule: {len(data['surgeries'])}")
