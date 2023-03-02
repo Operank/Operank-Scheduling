@@ -1,0 +1,75 @@
+﻿procedure name,Team
+Anal fistulectomy,procto
+Appendectomy,"1,2"
+Axillary lymph node dissenction,breast
+Bilateral mastectomy,breast
+Biopsy of liver,3
+Colectomy,"1,2"
+Colostomy,"1,2"
+Cytoreduction+HIPEC,1
+DEL,
+Laparoscopic Nissen's fundoplication,1
+Diagnostic laparoscopy,"1,2"
+Distal pancreatectomy,3
+Drainage abscess,"1,2"
+Esophago-gastrectomy,1
+EUA,"1,2"
+Exc of pilonidal sinus,"1,2"
+Exc retroperitoneal lesion,1
+Excision,"1,2"
+Excision of hemorrhoids,2
+Excisional biopsy,"1,2"
+Gastric repair paraesophageal hernia repair,1
+Gastroscopy,1
+Gastrostomy,1
+Hartman's procedure,"1,2"
+Hepatectomy,3
+Ileocecectomy,"1,2"
+Ileostomy,"1,2"
+Incisional hernia repair,1
+Kidney transplant,3
+Laparoscopic adrenalectomy,robotic
+Laparoscopic appendectomy,"1,2"
+Laparoscopic bilateral repair inguinal hernia,1
+Laparoscopic cholecystectomy,"1,2"
+Laparoscopic gastrectomy,1
+Laparoscopic gastric bypass,bariatric
+Laparoscopic incisional hernia repair,1
+Laparoscopic low anterior resection,2
+Laparoscopic mini gastric bypass,bariatric
+Laparoscopic nephroureterectomy,3
+Laparoscopic omentopexy,"1,2"
+Laparoscopic removal of gastric restrictive device,bariatric
+laparoscopic sentinel lymph node biopsy,1
+Laparoscopic sigmoidectomy,"1,2"
+Laparoscopic sleeve gastrectomy,bariatric
+Laparoscopic splenectomy,"1,2"
+Laparoscopic unilateral repair inguinal hernia,"1,2"
+Laparoscopic ventral hernia repair,"1,2"
+Laparotomy,"1,2"
+Liver transplant,
+Loop colostomy,"1,2"
+Low anterior resection,2
+Lumpectomy,breast
+Lumpectomy + ALND,breast
+Lumpectomy + SLNB,breast
+Mastectomy+reconstruction,breast
+Nephroureterectomy,3
+Open bilateral repair inguinal hernia,"1,2"
+Open cholecystectomy,"1,2"
+Open gastrectomy,1
+Open omentopexy,"1,2"
+Open repair of epigastric hernia,1
+Open sigmoidectomy,"1,2"
+Open unilateral repair inguinal hernia,"1,2"
+Open ventral hernia repair,1
+Pancreas transplant,3
+Sentinal lymph node biopsy,1
+Sentinel lymph node dissenction,1
+Small bowel resection,"1,2"
+Splenectomy,"1,2"
+Surgical feeding jejunostomy,"1,2"
+Temporal artery biopsy,"1,2"
+Thoracotomy,1
+Unilateral mastectomy,breast
+Whipple procedure,3
