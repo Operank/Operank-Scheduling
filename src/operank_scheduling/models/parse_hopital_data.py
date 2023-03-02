@@ -1,5 +1,5 @@
-from typing import Dict, List
 from csv import reader
+from typing import Dict, List
 
 from .io_utilities import find_project_root
 

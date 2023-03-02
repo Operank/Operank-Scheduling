@@ -1,8 +1,10 @@
-from typing import List, Dict
-from models.operank_models import OperatingRoom, Surgery
+from typing import Dict, List
+
 from algo.algo_helpers import intersection_size
-from algo.distribution_models import distribute_surgeries_to_operating_rooms, distribute_surgeries_to_days
+from algo.distribution_models import (distribute_surgeries_to_days,
+                                      distribute_surgeries_to_operating_rooms)
 from loguru import logger
+from models.operank_models import OperatingRoom, Surgery
 
 """
 # General Idea

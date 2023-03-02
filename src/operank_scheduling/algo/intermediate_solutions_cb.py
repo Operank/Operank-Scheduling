@@ -1,8 +1,8 @@
 import time
-from loguru import logger
 from typing import Dict, List
-import numpy as np
 
+import numpy as np
+from loguru import logger
 from models.operank_models import OperatingRoom, Surgery
 from ortools.sat.python import cp_model
 

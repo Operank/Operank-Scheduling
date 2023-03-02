@@ -1,4 +1,5 @@
-from src.operank_scheduling.models.parse_hopital_data import map_surgery_to_team
+from src.operank_scheduling.models.parse_hopital_data import \
+    map_surgery_to_team
 
 
 def test_map_surgery_to_team():

@@ -1,4 +1,5 @@
 from typing import List
+
 from .parse_hopital_data import map_surgery_to_team
 
 surgery_to_team_mapping = map_surgery_to_team()
