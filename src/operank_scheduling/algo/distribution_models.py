@@ -6,8 +6,7 @@ from loguru import logger
 
 from .algo_helpers import lazy_permute
 from .intermediate_solutions_cb import SurgeryToRoomSolutionCallback
-from models.operating_room import OperatingRoom
-from models.surgery import Surgery
+from models.operank_models import OperatingRoom, Surgery
 
 MAX_VAL_LIM = 10000
 

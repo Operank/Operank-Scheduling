@@ -1,6 +1,5 @@
 from typing import List, Dict
-from models.operating_room import OperatingRoom
-from models.surgery import Surgery
+from models.operank_models import OperatingRoom, Surgery
 from algo.algo_helpers import intersection_size
 from algo.distribution_models import distribute_surgeries_to_operating_rooms, distribute_surgeries_to_days
 from loguru import logger
@@ -115,8 +114,8 @@ if __name__ == "__main__":
 
     # or_list = [o, p, r]
     # surgery_list = [a, b, c, d, e, f, g, h]*10
-    surgery_list = [Surgery(name=f"s{i}", duration_in_minutes=60 * ((i % 3) + 1), requirements=[]) for i in range(90)]
-    or_list = [OperatingRoom(id=f"o{i}", properties=[]) for i in range(15)]
+    surgery_list = [Surgery(name=f"s{i}", duration_in_minutes=60 * ((i % 3) + 1), requirements=[]) for i in range(20)]
+    or_list = [OperatingRoom(id=f"o{i}", properties=[]) for i in range(5)]
 
     remaineder = assign_special_surgeries(surgery_list, or_list)
     disperse_surgeries_evenly(remaineder)

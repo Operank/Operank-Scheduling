@@ -3,8 +3,7 @@ from loguru import logger
 from typing import Dict, List
 import numpy as np
 
-from models.operating_room import OperatingRoom
-from models.surgery import Surgery
+from models.operank_models import OperatingRoom, Surgery
 from ortools.sat.python import cp_model
 
 
