@@ -21,12 +21,8 @@ class SurgeryToRoomSolutionCallback(cp_model.CpSolverSolutionCallback):
         self.start_time = time.time()
         self.x = x
 
-    def on_solution_callback(self):
-        current_time = time.time()
-        elapsed_time = current_time - self.start_time
-        self.solution_count += 1
+    def find_total_lengths(self):
         operating_room_surgery_lengths = []
-        # Print the solution:
         for operating_room_idx in self.data["rooms"]:
             total_duration = 0
             for surgery_idx in self.data["surgeries"]:
@@ -34,9 +30,14 @@ class SurgeryToRoomSolutionCallback(cp_model.CpSolverSolutionCallback):
                 if self.Value(self.x[surgery_idx, operating_room_idx]) > 0:
                     total_duration += surgery.duration
             operating_room_surgery_lengths.append(total_duration)
-            # logger.debug(
-            #     f"Surgeries in {operating_room}: {operating_room.surgeries_to_schedule}"
-            # )
+        return operating_room_surgery_lengths
+
+    def on_solution_callback(self):
+        current_time = time.time()
+        elapsed_time = current_time - self.start_time
+        self.solution_count += 1
+        operating_room_surgery_lengths = self.find_total_lengths()
+
         avg = np.mean(operating_room_surgery_lengths)
         logger.debug(
             f"[S{self.solution_count}] @ {elapsed_time:.2f}s =============="
