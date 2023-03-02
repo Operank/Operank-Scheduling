@@ -99,7 +99,7 @@ def disperse_surgeries_evenly(
 
 
 if __name__ == "__main__":
-    a = Surgery(name="a", duration_in_minutes=300, requirements=[])
+    a = Surgery(name="Ileostomy", duration_in_minutes=300, requirements=[])
     b = Surgery(name="b", duration_in_minutes=200, requirements=[])
     c = Surgery(name="c", duration_in_minutes=300, requirements=[])
     d = Surgery(name="d", duration_in_minutes=400, requirements=[])
