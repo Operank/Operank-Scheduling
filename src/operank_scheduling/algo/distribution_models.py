@@ -84,9 +84,12 @@ def distribute_surgeries_to_operating_rooms(
     solver = cp_model.CpSolver()
     solution_cb = SurgeryToRoomSolutionCallback(data, surgeries, rooms, x)
     solver.parameters.enumerate_all_solutions = True
+    solver.parameters.max_time_in_seconds = 10.0
+    logger.warning(f"Set max solve time to be: {solver.parameters.max_time_in_seconds} [s]")
     status = solver.Solve(model, solution_cb)
 
-    if status == cp_model.OPTIMAL:
+    if status == cp_model.OPTIMAL or status == cp_model.FEASIBLE:
+        logger.info(f"Solve status: {solver.StatusName(status)}")
         logger.info(f"Total surgeries to schedule: {len(data['surgeries'])}")
         logger.debug(f"Optimal difference (lower is better): {solver.ObjectiveValue()}")
         for operating_room_idx in data["rooms"]:
