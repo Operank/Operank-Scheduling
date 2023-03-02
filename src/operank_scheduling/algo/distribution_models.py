@@ -1,7 +1,6 @@
 from ortools.sat.python import cp_model
 
 from typing import Dict, List, Any
-from math import factorial
 from loguru import logger
 
 from .algo_helpers import lazy_permute
@@ -20,6 +19,7 @@ def restructure_data(
     model_data["surgery_durations"] = [surgery.duration for surgery in surgeries]
     model_data["surgeries"] = list(range(len(model_data["surgery_durations"])))
     model_data["rooms"] = list(range(operating_rooms_amt))
+    model_data["num_premutations"] = len(lazy_permute(model_data["rooms"]))
 
     model_data["max_total_duration"] = (
         max(model_data["surgery_durations"])
@@ -46,7 +46,7 @@ def distribute_surgeries_to_operating_rooms(
 
     absolute_length_differences = [
         model.NewIntVar(0, MAX_VAL_LIM, f"diff_{i}")
-        for i in range(factorial(len(data["rooms"])))
+        for i in range(data["num_premutations"])
     ]
     # End Variables -----------------------------------------
 
