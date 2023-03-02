@@ -53,3 +53,4 @@ venv*/
 .venv*/
 .conda*/
 .python-version
+*.xlsx
