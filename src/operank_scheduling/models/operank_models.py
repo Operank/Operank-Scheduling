@@ -15,6 +15,17 @@ class OperatingRoom:
         return self.id
 
 
+class Timeslot:
+    def __init__(self, lower_bound: int, upper_bound: int) -> None:
+        self.timeslot_length = upper_bound - lower_bound
+
+    def __contains__(self, duration) -> bool:
+        return duration <= self.timeslot_length
+
+    def __repr__(self) -> str:
+        return f"Timeslot ({self.timeslot_length})"
+
+
 class Surgery:
     def __init__(
         self, name: str, duration_in_minutes: int, requirements: List[str]
