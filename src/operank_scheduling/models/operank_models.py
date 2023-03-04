@@ -17,14 +17,22 @@ class OperatingRoom:
 
 
 class Timeslot:
+    bins = [30, 60, 120, 180, 360, 480]
+
     def __init__(self, duration: int) -> None:
-        self.duration = duration
+        self.duration = self.get_appropriate_bin(duration)
 
     def __contains__(self, duration) -> bool:
         return duration <= self.duration
 
     def __repr__(self) -> str:
         return f"Timeslot ({self.duration})"
+
+    def get_appropriate_bin(self, duration):
+        for bin in self.bins:
+            if duration <= bin:
+                return bin
+        raise IndexError("Surgery is too long - no appropriate bin found")
 
 
 class Surgery:
