@@ -6,10 +6,11 @@ surgery_to_team_mapping = map_surgery_to_team()
 
 
 class OperatingRoom:
-    def __init__(self, id: str, properties: List[str]) -> None:
+    def __init__(self, id: str, properties: List[str], uuid: int) -> None:
         self.id = id
         self.properties = properties
         self.timeslots_to_schedule: List[Timeslot] = list()
+        self.uuid = uuid
 
     def __repr__(self) -> str:
         return self.id
@@ -28,12 +29,13 @@ class Timeslot:
 
 class Surgery:
     def __init__(
-        self, name: str, duration_in_minutes: int, requirements: List[str] = list()
+        self, name: str, duration_in_minutes: int, uuid: int, requirements: List[str] = list()
     ) -> None:
         self.name = name.upper()
         self.duration = duration_in_minutes
         self.requirements = requirements
         self.suitable_teams = surgery_to_team_mapping.get(self.name, [])
+        self.uuid = uuid
 
     def __repr__(self) -> str:
         return f"{self.name} ({self.duration}m)"
