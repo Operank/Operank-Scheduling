@@ -50,3 +50,23 @@ class Surgery:
 
     def can_fit_in(self, timeslot: Timeslot) -> bool:
         return self.duration in timeslot
+
+
+class Patient:
+    def __init__(
+        self,
+        name: str,
+        patient_id: str,
+        surgery_name: str,
+        referrer: str,
+        estimated_duration_m: int,
+        priority: int,
+        uuid: int
+    ) -> None:
+        self.name = name
+        self.patient_id = patient_id
+        self.surgery_name = surgery_name
+        self.referrer = referrer
+        self.duration_m = estimated_duration_m
+        self.priority = priority
+        self.uuid = uuid
