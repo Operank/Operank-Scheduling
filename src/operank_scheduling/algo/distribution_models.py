@@ -5,7 +5,10 @@ from loguru import logger
 
 from .algo_helpers import lazy_permute
 from .intermediate_solutions_cb import SurgeryToRoomSolutionCallback
-from ..models.operank_models import OperatingRoom, Timeslot
+try:
+    from ..models.operank_models import OperatingRoom, Timeslot
+except ValueError:
+    from models.operank_models import OperatingRoom, Timeslot
 
 MAX_VAL_LIM = 10000
 

@@ -2,7 +2,10 @@ import time
 from typing import Dict, List
 
 from loguru import logger
-from ..models.operank_models import OperatingRoom, Timeslot
+try:
+    from ..models.operank_models import OperatingRoom, Timeslot
+except ValueError:
+    from models.operank_models import OperatingRoom, Timeslot
 from ortools.sat.python import cp_model
 
 
