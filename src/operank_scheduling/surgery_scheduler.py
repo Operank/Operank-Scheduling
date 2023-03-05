@@ -89,7 +89,8 @@ def assign_special_surgeries(
 
 
 if __name__ == "__main__":
-    timeslot_list = [Timeslot(duration=60 * ((i % 3) + 1)) for i in range(10)]
-    or_list = [OperatingRoom(id=f"o{i}", properties=[]) for i in range(2)]
+    timeslot_list = [Timeslot(duration=60 * ((i % 3) + 1)) for i in range(16)]
+    or_list = [OperatingRoom(id=f"o{i}", properties=[], uuid=i) for i in range(2)]
     distribute_timeslots_to_operating_rooms(timeslot_list, or_list)
     distribute_timeslots_to_days(or_list)
+    pass

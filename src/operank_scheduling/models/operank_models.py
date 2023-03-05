@@ -10,6 +10,7 @@ class OperatingRoom:
         self.id = id
         self.properties = properties
         self.timeslots_to_schedule: List[Timeslot] = list()
+        self.daily_slots: List[List[Timeslot]] = list()
         self.uuid = uuid
 
     def __repr__(self) -> str:

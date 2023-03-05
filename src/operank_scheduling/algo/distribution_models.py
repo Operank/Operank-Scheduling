@@ -183,12 +183,16 @@ def distribute_timeslots_to_days(rooms: List[OperatingRoom]):
             logger.debug(f"[Optimization] For Room: {room}")
             timeslots = room.timeslots_to_schedule
             for day in data["days"]:
+                daily_timeslots = list()
                 if solver.Value(y[day]):
                     out_str = f"Day: {day} | "
                     for timeslot_idx in data["timeslots"]:
                         timeslot = timeslots[timeslot_idx]
                         if solver.Value(x[timeslot_idx, day]) > 0:
                             out_str += f" {timeslot}"
+                            daily_timeslots.append(timeslot)
                     logger.debug(out_str)
+                if len(daily_timeslots):
+                    room.daily_slots.append(daily_timeslots)
         else:
             logger.warning(f"[Optimization] Failed to solve, status: {status}")
