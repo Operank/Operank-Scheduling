@@ -8,6 +8,8 @@ def test_map_surgery_to_team():
     mapping = map_surgery_to_team()
     assert mapping.get("Colectomy".upper()) == ["1", "2"]
     assert mapping.get("Laparoscopic adrenalectomy".upper()) == ["robotic"]
+    assert mapping.get("Sentinal lymph node biopsy".upper()) == ["1"]
+    assert mapping.get("Liver transplant,".upper()) is None
 
 
 def test_surgeon_creation():
