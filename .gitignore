@@ -1,3 +1,6 @@
+# Specifics
+assets/*
+
 # Temporary and binary files
 *~
 *.py[cod]
