@@ -1,4 +1,4 @@
-from src.operank_scheduling.models.operank_models import Surgery, Timeslot
+from src.operank_scheduling.models.operank_models import Surgery, Timeslot, get_all_surgeons
 from src.operank_scheduling.models.parse_patient_data import \
     parse_single_json_block
 
@@ -48,3 +48,7 @@ def test_parse_patient_data():
         assert timeslot.duration >= surgery.duration
 
     assert patients[0].uuid is not patients[1].uuid
+
+
+def test_get_all_surgeons():
+    get_all_surgeons()

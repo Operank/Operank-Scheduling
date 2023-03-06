@@ -1,6 +1,6 @@
 from typing import List
 
-from .parse_hopital_data import map_surgery_to_team
+from .parse_hopital_data import load_surgeon_data, map_surgery_to_team
 
 surgery_to_team_mapping = map_surgery_to_team()
 
@@ -38,7 +38,11 @@ class Timeslot:
 
 class Surgery:
     def __init__(
-        self, name: str, duration_in_minutes: int, uuid: int, requirements: List[str] = list()
+        self,
+        name: str,
+        duration_in_minutes: int,
+        uuid: int,
+        requirements: List[str] = list(),
     ) -> None:
         self.name = name.upper()
         self.duration = duration_in_minutes
@@ -62,7 +66,7 @@ class Patient:
         referrer: str,
         estimated_duration_m: int,
         priority: int,
-        uuid: int
+        uuid: int,
     ) -> None:
         self.name = name
         self.patient_id = patient_id
@@ -71,3 +75,25 @@ class Patient:
         self.duration_m = estimated_duration_m
         self.priority = priority
         self.uuid = uuid
+
+
+class Surgeon:
+    def __init__(self, name: str, surgeon_id: int, ward: int, team: str) -> None:
+        self.name = name
+        self.id = surgeon_id
+        self.ward = ward
+        self.team = team.upper()
+
+
+def get_all_surgeons() -> List[Surgeon]:
+    surgeons_list = list()
+    surgeon_data_list = load_surgeon_data()
+    for surgeon_data in surgeon_data_list:
+        name = surgeon_data["name"]
+        surgeon_id = surgeon_data["surgeon_id"]
+        ward = surgeon_data["ward"]
+        team = surgeon_data["team"]
+        surgeons_list.append(
+            Surgeon(name=name, surgeon_id=surgeon_id, ward=ward, team=team)
+        )
+    return surgeons_list
