@@ -3,6 +3,7 @@ import pytest
 from src.operank_scheduling.algo.patient_assignment import (
     get_surgery_by_patient,
     sort_patients_by_priority,
+    suggest_feasible_dates,
 )
 from src.operank_scheduling.models.operank_models import Patient, Surgery
 
@@ -53,7 +54,7 @@ def test_patient_sorting():
 
 
 @pytest.fixture
-def create_dummy_patients_and_surgeries():
+def create_dummy_patient_and_surgeries():
     patient = Patient(
         priority=1,
         name="a",
@@ -69,12 +70,12 @@ def create_dummy_patients_and_surgeries():
     return (patient, surgeries)
 
 
-def test_surgery_to_patient_link(create_dummy_patients_and_surgeries):
-    patient, surgeries = create_dummy_patients_and_surgeries
+def test_surgery_to_patient_link(create_dummy_patient_and_surgeries):
+    patient, surgeries = create_dummy_patient_and_surgeries
     assert get_surgery_by_patient(patient, surgeries) == surgeries[0]
 
 
-def test_surgery_to_patient_link_exception(create_dummy_patients_and_surgeries):
+def test_surgery_to_patient_link_exception(create_dummy_patient_and_surgeries):
     patient = Patient(
         priority=1,
         name="a",
@@ -84,6 +85,11 @@ def test_surgery_to_patient_link_exception(create_dummy_patients_and_surgeries):
         estimated_duration_m=3,
         uuid=7,
     )
-    _, surgeries = create_dummy_patients_and_surgeries
+    _, surgeries = create_dummy_patient_and_surgeries
     with pytest.raises(ValueError):
         get_surgery_by_patient(patient, surgeries)
+
+
+def test_suggest_feasible_dates(create_dummy_patient_and_surgeries):
+    patient, surgeries = create_dummy_patient_and_surgeries
+    suggest_feasible_dates(patient, surgeries, [], [])
