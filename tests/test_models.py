@@ -1,6 +1,12 @@
-from src.operank_scheduling.models.operank_models import Surgery, Timeslot, get_all_surgeons
-from src.operank_scheduling.models.parse_patient_data import \
-    parse_single_json_block
+from src.operank_scheduling.models.operank_models import (
+    Surgery,
+    Timeslot,
+    get_all_surgeons,
+)
+from src.operank_scheduling.models.parse_patient_data import (
+    parse_single_json_block,
+    load_patients_from_json,
+)
 
 
 def test_timeslot():
@@ -21,23 +27,22 @@ def test_timeslot_surgery_interaction():
 
 def test_parse_patient_data():
     patient_block_example_list = [
-        """{
-    "name" : "Mr. Man",
-    "patient_id": "000000000",
-    "surgery_name" : "Kidney transplant",
-    "referrer" : "Dr. Guy",
-    "estimated_duration_m" : 165,
-    "priority" : 7}
-    """,
-        """
-{   "name" : "Ms. Woman",
-    "patient_id": "000000500",
-    "surgery_name" : "Loop colostomy",
-    "referrer" : "Dr. Dude",
-    "estimated_duration_m" : 55,
-    "priority" : 5
-}
-    """,
+        {
+            "name": "Mr. Man",
+            "patient_id": "000000000",
+            "surgery_name": "Kidney transplant",
+            "referrer": "Dr. Guy",
+            "estimated_duration_m": 165,
+            "priority": 7,
+        },
+        {
+            "name": "Ms. Woman",
+            "patient_id": "000000500",
+            "surgery_name": "Loop colostomy",
+            "referrer": "Dr. Dude",
+            "estimated_duration_m": 55,
+            "priority": 5,
+        },
     ]
     patients = list()
 
@@ -52,3 +57,10 @@ def test_parse_patient_data():
 
 def test_get_all_surgeons():
     get_all_surgeons()
+
+
+def test_load_patients_from_json():
+    patients, surgeries, timeslots = load_patients_from_json(
+        r"G:\Code\operank_scheduling\assets\example_patient_data.json"
+    )
+    pass

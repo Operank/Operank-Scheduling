@@ -2,10 +2,13 @@ from typing import List
 
 from loguru import logger
 
-from src.operank_scheduling.models.operank_models import (OperatingRoom,
-                                                          Patient, Surgeon,
-                                                          Surgery,
-                                                          get_all_surgeons)
+from src.operank_scheduling.models.operank_models import (
+    OperatingRoom,
+    Patient,
+    Surgeon,
+    Surgery,
+    get_all_surgeons,
+)
 
 
 def sort_patients_by_priority(patient_list: List[Patient]) -> List[Patient]:
@@ -34,7 +37,9 @@ def suggest_feasible_dates(
     surgeons: List[Surgeon],
 ) -> List:
     procedure = get_surgery_by_patient(patient, surgeries)
-    print(procedure)
+    required_teams = procedure.suitable_teams
+    duration = procedure.duration
+    print(procedure, required_teams, duration)
 
 
 def schedule_patients(
@@ -54,3 +59,10 @@ def schedule_patients(
         dates = suggest_feasible_dates(patient, surgeries, rooms, surgeons)
         print(dates)
     pass
+
+
+if __name__ == "__main__":
+    patients = [Patient(uuid=i) for i in range(10)]
+    surgeries = [Surgery(uuid=i) for i in range(10)]
+    rooms = [OperatingRoom() for i in range(2)]
+    schedule_patients(patients, surgeries, rooms)
