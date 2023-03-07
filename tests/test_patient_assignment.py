@@ -4,8 +4,9 @@ from src.operank_scheduling.algo.patient_assignment import (
     get_surgery_by_patient,
     sort_patients_by_priority,
     suggest_feasible_dates,
+    get_surgeons_by_team
 )
-from src.operank_scheduling.models.operank_models import Patient, Surgery
+from src.operank_scheduling.models.operank_models import Patient, Surgery, get_all_surgeons
 
 
 def test_patient_sorting():
@@ -93,3 +94,10 @@ def test_surgery_to_patient_link_exception(create_dummy_patient_and_surgeries):
 def test_suggest_feasible_dates(create_dummy_patient_and_surgeries):
     patient, surgeries = create_dummy_patient_and_surgeries
     suggest_feasible_dates(patient, surgeries, [], [])
+
+
+def test_get_surgeons_by_team():
+    surgeons = get_all_surgeons()
+    breast_team = get_surgeons_by_team("breast", surgeons)
+    for surgeon in breast_team:
+        assert surgeon.team == "breast".upper()
