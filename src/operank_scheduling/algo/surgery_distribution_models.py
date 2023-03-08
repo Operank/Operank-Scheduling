@@ -193,6 +193,6 @@ def distribute_timeslots_to_days(rooms: List[OperatingRoom]):
                             daily_timeslots.append(timeslot)
                     logger.debug(out_str)
                 if len(daily_timeslots):
-                    room.daily_slots.append(daily_timeslots)
+                    room.timeslots_by_day.append(daily_timeslots)
         else:
             logger.warning(f"[Optimization] Failed to solve, status: {status}")

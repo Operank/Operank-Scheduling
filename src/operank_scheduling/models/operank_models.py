@@ -1,3 +1,4 @@
+import datetime
 from typing import List
 
 from .parse_hopital_data import load_surgeon_data, map_surgery_to_team
@@ -10,11 +11,44 @@ class OperatingRoom:
         self.id = id
         self.properties = properties
         self.timeslots_to_schedule: List[Timeslot] = list()
-        self.daily_slots: List[List[Timeslot]] = list()
+        self.timeslots_by_day: List[List[Timeslot]] = list()
         self.uuid = uuid
+        self.schedule = dict()
+        self.non_working_days = [4, 5]  # 4: Friday, 5: Saturday
 
     def __repr__(self) -> str:
         return self.id
+
+    def _get_next_working_days(
+        self, current_day: datetime.date, days_to_generate: int
+    ) -> List[datetime.date]:
+        workdays = list()
+        generated_days = 0
+        offset = 0
+        while generated_days < days_to_generate:
+            while current_day.weekday() in self.non_working_days:
+                # Skip weekends
+                current_day = current_day + datetime.timedelta(days=1)
+            workdays.append(current_day.date())
+
+            # Move to the following day
+            current_day = current_day + datetime.timedelta(days=1)
+            generated_days += 1
+        return workdays
+
+    def schedule_timeslots_to_days(self, starting_day_date: datetime.date):
+        starting_day_datetime = datetime.datetime(
+            year=starting_day_date.year,
+            month=starting_day_date.month,
+            day=starting_day_date.day,
+        )
+
+        working_days = self._get_next_working_days(
+            starting_day_datetime, len(self.timeslots_by_day)
+        )
+
+        for day_idx, day in enumerate(working_days):
+            self.schedule[day] = self.timeslots_by_day[day_idx]
 
 
 class Timeslot:
@@ -83,6 +117,7 @@ class Surgeon:
         self.id = surgeon_id
         self.ward = ward
         self.team = team.upper()
+        self.occupied_times = list()
 
 
 def get_all_surgeons() -> List[Surgeon]:

@@ -1,3 +1,7 @@
+import datetime
+
+import pytest
+
 from src.operank_scheduling.algo.surgery_distribution_models import (
     distribute_timeslots_to_days,
     distribute_timeslots_to_operating_rooms,
@@ -5,12 +9,36 @@ from src.operank_scheduling.algo.surgery_distribution_models import (
 from src.operank_scheduling.models.operank_models import OperatingRoom, Timeslot
 
 
-def test_no_empty_days():
+@pytest.fixture
+def scheduling_fixture():
     timeslot_list = [Timeslot(duration=60 * ((i % 3) + 1)) for i in range(10)]
     or_list = [OperatingRoom(id=f"o{i}", properties=[], uuid=i) for i in range(2)]
     distribute_timeslots_to_operating_rooms(timeslot_list, or_list)
     distribute_timeslots_to_days(or_list)
+    return timeslot_list, or_list
 
+
+def test_no_empty_days(scheduling_fixture):
+    timeslot_list, or_list = scheduling_fixture
     for operating_room in or_list:
-        for day in operating_room.daily_slots:
+        for day in operating_room.timeslots_by_day:
             assert len(day) > 0
+
+
+def test_schedule_to_days(scheduling_fixture):
+    timeslot_list, or_list = scheduling_fixture
+    for operating_room in or_list:
+        operating_room.schedule_timeslots_to_days(datetime.datetime.now().date())
+
+
+def test_schedule_to_days_with_non_working_days(scheduling_fixture):
+    timeslot_list, or_list = scheduling_fixture
+    for operating_room in or_list:
+        # Try to schedule on friday, expect schedule to start from sunday!
+        operating_room.schedule_timeslots_to_days(
+            datetime.datetime(year=2023, month=3, day=10).date()
+        )
+        assert list(operating_room.schedule.keys()) == [
+            datetime.datetime(year=2023, month=3, day=12).date(),
+            datetime.datetime(year=2023, month=3, day=13).date(),
+        ]
