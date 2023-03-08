@@ -1,4 +1,4 @@
-from src.operank_scheduling.algo.distribution_models import (
+from src.operank_scheduling.algo.surgery_distribution_models import (
     distribute_timeslots_to_days,
     distribute_timeslots_to_operating_rooms,
 )
