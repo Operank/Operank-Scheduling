@@ -1,5 +1,5 @@
 import datetime
-from typing import List
+from typing import List, Dict
 
 from .parse_hopital_data import load_surgeon_data, map_surgery_to_team
 from src.operank_scheduling.models.enums import surgeon_teams
@@ -13,7 +13,7 @@ class OperatingRoom:
         self.properties = properties
         self.timeslots_to_schedule: List[Timeslot] = list()
         self.timeslots_by_day: List[List[Timeslot]] = list()
-        self.schedule = dict()
+        self.schedule: Dict[datetime.date, List[Timeslot]] = dict()
         self.non_working_days = [4, 5]  # 4: Friday, 5: Saturday
 
     def __repr__(self) -> str:
