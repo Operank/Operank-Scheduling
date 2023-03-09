@@ -8,6 +8,10 @@ from operank_scheduling.models.parse_data_to_models import (
     load_patients_from_json,
 )
 from operank_scheduling.models.io_utilities import find_project_root
+from operank_scheduling.algo.surgery_distribution_models import (
+    perform_preliminary_scheduling,
+)
+from operank_scheduling.algo.patient_assignment import sort_patients_by_priority
 
 datetimes_list = [
     datetime.datetime.now(),
@@ -22,10 +26,16 @@ patient_list, surgery_list, timeslot_list = load_patients_from_json(
 operating_rooms = load_operating_rooms_from_json(
     assets_dir / "example_operating_room_schedule.json"
 )
+patient_list = sort_patients_by_priority(patient_list)
 surgeons = get_all_surgeons()
+operating_rooms = operating_rooms[:2]
+perform_preliminary_scheduling(timeslot_list, operating_rooms)
+
+for operating_room in operating_rooms:
+    operating_room.schedule_timeslots_to_days(datetime.datetime.now().date())
 
 OperankHeader()
-PatientSchedulingUI(patient_list, datetimes_list)
+PatientSchedulingUI(patient_list, surgery_list, operating_rooms)
 ui.footer()
 
 ui.run(title="Operank", favicon=str(assets_dir / "operank_favicon.jpg"))

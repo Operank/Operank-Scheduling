@@ -1,6 +1,7 @@
 from nicegui import ui
 from typing import List, Callable
-from operank_scheduling.models.operank_models import Patient
+from operank_scheduling.models.operank_models import Patient, Surgery, OperatingRoom
+from operank_scheduling.algo.patient_assignment import suggest_feasible_dates
 import datetime
 
 
@@ -87,12 +88,27 @@ class ArrowNavigationControls:
 
 
 class PatientSchedulingUI:
-    def __init__(self, patient_list: List[Patient], datetimes_list) -> None:
+    def __init__(
+        self,
+        patient_list: List[Patient],
+        surgery_list: List[Surgery],
+        rooms: List[OperatingRoom],
+    ) -> None:
         self.content = ui.row()
-        self.current_patient_idx = 0
         self.patient_list = patient_list
-        self.datetimes_list = datetimes_list
+        self.surgery_list = surgery_list
+        self.rooms = rooms
+
+        self.current_patient_idx = 0
+        self.datetimes_list = self.fetch_valid_timeslots()
         self.display_patient_scheduling_ui()
+
+    def fetch_valid_timeslots(self):
+        patient = self.patient_list[self.current_patient_idx % len(self.patient_list)]
+        feasible_slots = suggest_feasible_dates(
+            patient, self.surgery_list, self.rooms, []
+        )
+        return [slot[1] for slot in feasible_slots]
 
     def draw_inner_ui(self, patient, datetimes_list):
         with self.content.classes("items-center"):
@@ -103,7 +119,8 @@ class PatientSchedulingUI:
     def display_patient_scheduling_ui(self):
         self.content.clear()
         self.draw_inner_ui(
-            self.patient_list[self.current_patient_idx], self.datetimes_list
+            self.patient_list[self.current_patient_idx % len(self.patient_list)],
+            self.datetimes_list,
         )
 
     def update_app_state(self, direction: str):
@@ -112,6 +129,8 @@ class PatientSchedulingUI:
             self.current_patient_idx += 1
         else:
             self.current_patient_idx -= 1
+        self.datetimes_list = self.fetch_valid_timeslots()
         self.draw_inner_ui(
-            self.patient_list[self.current_patient_idx], self.datetimes_list
+            self.patient_list[self.current_patient_idx % len(self.patient_list)],
+            self.datetimes_list,
         )
