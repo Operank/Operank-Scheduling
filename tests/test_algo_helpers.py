@@ -1,5 +1,4 @@
-from src.operank_scheduling.algo.algo_helpers import (intersection_size,
-                                                      lazy_permute)
+from operank_scheduling.algo.algo_helpers import intersection_size, lazy_permute
 
 
 def test_intersection_size():
@@ -10,6 +9,13 @@ def test_intersection_size():
 
 
 def test_lazy_permute():
-    assert lazy_permute([1, 2, 3, 5]) == [(1, 2), (1, 3), (1, 5), (2, 3), (2, 5), (3, 5)]
+    assert lazy_permute([1, 2, 3, 5]) == [
+        (1, 2),
+        (1, 3),
+        (1, 5),
+        (2, 3),
+        (2, 5),
+        (3, 5),
+    ]
     assert lazy_permute([]) == []
     assert lazy_permute([1]) == []

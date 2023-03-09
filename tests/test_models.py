@@ -1,9 +1,9 @@
-from src.operank_scheduling.models.operank_models import (
+from operank_scheduling.models.operank_models import (
     Surgery,
     Timeslot,
     get_all_surgeons,
 )
-from src.operank_scheduling.models.parse_data_to_models import (
+from operank_scheduling.models.parse_data_to_models import (
     parse_single_json_block,
     load_patients_from_json,
     load_operating_rooms_from_json,

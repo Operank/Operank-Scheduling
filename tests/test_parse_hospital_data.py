@@ -1,4 +1,4 @@
-from src.operank_scheduling.models.parse_hopital_data import (
+from operank_scheduling.models.parse_hopital_data import (
     load_surgeon_data,
     map_surgery_to_team,
 )

@@ -2,7 +2,7 @@ import pytest
 from typing import List, Tuple
 import datetime
 
-from src.operank_scheduling.algo.patient_assignment import (
+from operank_scheduling.algo.patient_assignment import (
     get_surgery_by_patient,
     sort_patients_by_priority,
     suggest_feasible_dates,
@@ -12,17 +12,17 @@ from src.operank_scheduling.algo.patient_assignment import (
     find_suitable_timeslots,
 )
 
-from src.operank_scheduling.models.parse_data_to_models import (
+from operank_scheduling.models.parse_data_to_models import (
     load_operating_rooms_from_json,
     load_patients_from_json,
 )
 
-from src.operank_scheduling.algo.surgery_distribution_models import (
+from operank_scheduling.algo.surgery_distribution_models import (
     distribute_timeslots_to_operating_rooms,
     distribute_timeslots_to_days,
 )
 
-from src.operank_scheduling.models.operank_models import (
+from operank_scheduling.models.operank_models import (
     Patient,
     Surgery,
     OperatingRoom,
@@ -31,7 +31,7 @@ from src.operank_scheduling.models.operank_models import (
     get_all_surgeons,
 )
 
-from src.operank_scheduling.models.io_utilities import find_project_root
+from operank_scheduling.models.io_utilities import find_project_root
 
 
 def test_patient_sorting():

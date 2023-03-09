@@ -2,15 +2,15 @@ import datetime
 
 import pytest
 
-from src.operank_scheduling.algo.surgery_distribution_models import (
+from operank_scheduling.algo.surgery_distribution_models import (
     distribute_timeslots_to_days,
     distribute_timeslots_to_operating_rooms,
 )
-from src.operank_scheduling.models.operank_models import OperatingRoom, Timeslot
-from src.operank_scheduling.models.parse_data_to_models import (
+from operank_scheduling.models.operank_models import OperatingRoom, Timeslot
+from operank_scheduling.models.parse_data_to_models import (
     load_operating_rooms_from_json,
 )
-from src.operank_scheduling.models.io_utilities import find_project_root
+from operank_scheduling.models.io_utilities import find_project_root
 
 
 @pytest.fixture
