@@ -91,12 +91,11 @@ def suggest_feasible_dates(
     rooms: List[OperatingRoom],
     surgeons: List[Surgeon],
 ) -> List[Tuple[OperatingRoom, datetime.date, Timeslot]]:
-    dates = list()
     procedure = get_surgery_by_patient(patient, surgeries)
     suitable_rooms = find_suitable_operating_rooms(procedure, rooms)
     suitable_surgeons = find_suitable_surgeons(procedure, surgeons)
     suitable_timeslots = find_suitable_timeslots(procedure, suitable_rooms, suitable_surgeons)
-    return dates
+    return suitable_timeslots
 
 
 def schedule_patients(
