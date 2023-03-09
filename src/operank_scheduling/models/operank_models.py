@@ -7,12 +7,11 @@ surgery_to_team_mapping = map_surgery_to_team()
 
 
 class OperatingRoom:
-    def __init__(self, id: str, properties: List[str], uuid: int) -> None:
+    def __init__(self, id: str, properties: List[str]) -> None:
         self.id = id
         self.properties = properties
         self.timeslots_to_schedule: List[Timeslot] = list()
         self.timeslots_by_day: List[List[Timeslot]] = list()
-        self.uuid = uuid
         self.schedule = dict()
         self.non_working_days = [4, 5]  # 4: Friday, 5: Saturday
 
@@ -24,7 +23,6 @@ class OperatingRoom:
     ) -> List[datetime.date]:
         workdays = list()
         generated_days = 0
-        offset = 0
         while generated_days < days_to_generate:
             while current_day.weekday() in self.non_working_days:
                 # Skip weekends
