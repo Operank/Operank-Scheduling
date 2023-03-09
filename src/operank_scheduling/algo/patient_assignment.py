@@ -1,6 +1,7 @@
-from typing import List
+from typing import List, Tuple
 
 from loguru import logger
+import datetime
 from src.operank_scheduling.algo.algo_helpers import intersection_size
 
 from src.operank_scheduling.models.operank_models import (
@@ -8,6 +9,7 @@ from src.operank_scheduling.models.operank_models import (
     Patient,
     Surgeon,
     Surgery,
+    Timeslot,
     get_all_surgeons,
 )
 
@@ -65,13 +67,22 @@ def find_suitable_timeslots(
     suitable_rooms: List[OperatingRoom],
     suitable_surgeons: List[Surgeon],
 ):
+    # TODO: Make use of the surgeon schedule
+
     suitable_timeslots = list()
     for room in suitable_rooms:
         for day in room.schedule:
             for timeslot in room.schedule[day]:
                 if procedure.can_fit_in(timeslot):
                     suitable_timeslots.append((room, day, timeslot))
-    return suitable_timeslots
+
+    minimal_timeslot = min(suitable_timeslots, key=lambda x: x[2].duration)
+    suitable_minimal_timeslots = [
+        timeslot
+        for timeslot in suitable_timeslots
+        if timeslot[2].duration == minimal_timeslot[2].duration
+    ]
+    return suitable_minimal_timeslots
 
 
 def suggest_feasible_dates(
@@ -79,12 +90,12 @@ def suggest_feasible_dates(
     surgeries: List[Surgery],
     rooms: List[OperatingRoom],
     surgeons: List[Surgeon],
-) -> List:
+) -> List[Tuple[OperatingRoom, datetime.date, Timeslot]]:
     dates = list()
     procedure = get_surgery_by_patient(patient, surgeries)
     suitable_rooms = find_suitable_operating_rooms(procedure, rooms)
     suitable_surgeons = find_suitable_surgeons(procedure, surgeons)
-    print(procedure, suitable_rooms, suitable_surgeons)
+    suitable_timeslots = find_suitable_timeslots(procedure, suitable_rooms, suitable_surgeons)
     return dates
 
 
