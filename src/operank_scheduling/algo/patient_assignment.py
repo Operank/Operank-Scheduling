@@ -1,6 +1,7 @@
 from typing import List
 
 from loguru import logger
+from src.operank_scheduling.algo.algo_helpers import intersection_size
 
 from src.operank_scheduling.models.operank_models import (
     OperatingRoom,
@@ -30,6 +31,35 @@ def get_surgeons_by_team(team_name: str, surgeons: List[Surgeon]) -> List[Surgeo
     return matching_surgeons
 
 
+def find_suitable_operating_rooms(
+    procedure: Surgery, rooms: List[OperatingRoom]
+) -> List[OperatingRoom]:
+    suitable_rooms = []
+    for room in rooms:
+        match_strength = intersection_size(procedure.requirements, room.properties)
+        if match_strength >= len(procedure.requirements):
+            suitable_rooms.append(room)
+    return suitable_rooms
+
+
+def find_suitable_surgeons(
+    procedure: Surgery, surgeons: List[Surgeon]
+) -> List[Surgeon]:
+    suitable_surgeons = list()
+    schedule_by_ward = False
+
+    if len(procedure.suitable_teams) == 0:
+        schedule_by_ward = True
+
+    for surgeon in surgeons:
+        if schedule_by_ward and surgeon.ward in procedure.suitable_wards:
+            suitable_surgeons.append(surgeon)
+
+        elif surgeon.team in procedure.suitable_teams:
+            suitable_surgeons.append(surgeon)
+    return suitable_surgeons
+
+
 def suggest_feasible_dates(
     patient: Patient,
     surgeries: List[Surgery],
@@ -38,7 +68,9 @@ def suggest_feasible_dates(
 ) -> List:
     dates = list()
     procedure = get_surgery_by_patient(patient, surgeries)
-    print(procedure)
+    suitable_rooms = find_suitable_operating_rooms(procedure, rooms)
+    suitable_surgeons = find_suitable_surgeons(procedure, surgeons)
+    print(procedure, suitable_rooms, suitable_surgeons)
     return dates
 
 
