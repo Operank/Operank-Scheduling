@@ -1,5 +1,6 @@
 # Specifics
 assets/*
+pip-wheel-metadata/*
 
 # Temporary and binary files
 *~
