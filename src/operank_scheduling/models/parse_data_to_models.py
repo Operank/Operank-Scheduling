@@ -57,7 +57,7 @@ def parse_single_json_block(patient_data: dict) -> Tuple[Patient, Surgery, Times
     return patient, surgery, timeslot
 
 
-def load_patients_from_json(jsonpath: str):
+def load_patients_from_json(jsonpath: str) -> Tuple[List[Patient], List[Surgery], List[Timeslot]]:
     patients = list()
     surgeries = list()
     timeslots = list()
