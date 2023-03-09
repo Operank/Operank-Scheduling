@@ -1,12 +1,12 @@
 # from typing import Dict, List
 
-from algo.distribution_models import (
+from ..algo.distribution_models import (
     distribute_timeslots_to_days,
     distribute_timeslots_to_operating_rooms,
 )
 
 # from loguru import logger
-from models.operank_models import OperatingRoom, Timeslot
+from .models.operank_models import OperatingRoom, Timeslot
 
 """
 # General Idea

@@ -2,7 +2,7 @@ import datetime
 from typing import List, Dict
 
 from .parse_hopital_data import load_surgeon_data, map_surgery_to_team
-from src.operank_scheduling.models.enums import surgeon_teams
+from operank_scheduling.models.enums import surgeon_teams
 
 surgery_to_team_mapping = map_surgery_to_team()
 

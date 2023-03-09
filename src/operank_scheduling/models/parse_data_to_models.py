@@ -1,7 +1,7 @@
 import json
 from typing import Tuple, List
 
-from src.operank_scheduling.models.operank_models import (
+from operank_scheduling.models.operank_models import (
     Patient,
     Surgery,
     Timeslot,

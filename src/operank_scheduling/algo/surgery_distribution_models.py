@@ -5,10 +5,9 @@ from loguru import logger
 
 from .algo_helpers import lazy_permute
 from .intermediate_solutions_cb import SurgeryToRoomSolutionCallback
-try:
-    from ..models.operank_models import OperatingRoom, Timeslot
-except ValueError:
-    from models.operank_models import OperatingRoom, Timeslot
+
+from ..models.operank_models import OperatingRoom, Timeslot
+
 
 MAX_VAL_LIM = 10000
 
@@ -36,7 +35,6 @@ def restructure_data(
 def distribute_timeslots_to_operating_rooms(
     timeslots: List[Timeslot], rooms: List[OperatingRoom]
 ) -> Dict[OperatingRoom, List[Timeslot]]:
-
     data = restructure_data(timeslots, rooms)
     model = cp_model.CpModel()
 

@@ -2,9 +2,9 @@ from typing import List, Tuple
 
 from loguru import logger
 import datetime
-from src.operank_scheduling.algo.algo_helpers import intersection_size
+from ..algo.algo_helpers import intersection_size
 
-from src.operank_scheduling.models.operank_models import (
+from ..models.operank_models import (
     OperatingRoom,
     Patient,
     Surgeon,
