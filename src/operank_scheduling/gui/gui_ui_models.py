@@ -37,13 +37,22 @@ class DateSelectionCard(ui.card):
         )
         self.option_index = option_index
         with self:
-            with ui.column().classes("items-center"):
+            col = ui.column()
+            with col.classes("items-center"):
                 ui.label(self.displayed_date)
-                ui.button("Select", on_click=self.button_cb)
+            self.on("click", self.button_cb)
+            self.on("mouseover", self.highlight)
+            self.on("mouseout", self.unhighlight)
 
     def button_cb(self):
         ui.notify(self.option_index, closeBtn=True)
         return self.option_index
+
+    def highlight(self):
+        self.classes(add="bg-blue-400")
+
+    def unhighlight(self):
+        self.classes(remove="bg-blue-400")
 
 
 class FormattedTextRow:
@@ -55,12 +64,18 @@ class FormattedTextRow:
             ui.label(text).classes("text-weight-regular")
 
 
-class PatientNavigationControls:
-    def __init__(self, state_func: Callable) -> None:
+class ArrowNavigationControls:
+    def __init__(self, direction: str, state_func: Callable) -> None:
         self.state_func = state_func
-        with ui.row():
-            ui.button(text="Previous Patient", on_click=self.prev_cb)
-            ui.button(text="Next Patient", on_click=self.next_cb)
+        with ui.column():
+            if direction == "left":
+                icon = ui.icon("arrow_back_ios")
+                callback = self.prev_cb
+            else:
+                icon = ui.icon("arrow_forward_ios")
+                callback = self.next_cb
+
+        icon.on("click", callback)
 
     def next_cb(self):
         ui.notify("Moving to next patient", closeBtn=True)
@@ -73,7 +88,7 @@ class PatientNavigationControls:
 
 class PatientSchedulingUI:
     def __init__(self, patient_list: List[Patient], datetimes_list) -> None:
-        self.content = ui.column()
+        self.content = ui.row()
         self.current_patient_idx = 0
         self.patient_list = patient_list
         self.datetimes_list = datetimes_list
@@ -81,8 +96,9 @@ class PatientSchedulingUI:
 
     def draw_inner_ui(self, patient, datetimes_list):
         with self.content.classes("items-center"):
+            ArrowNavigationControls(direction="left", state_func=self.update_app_state)
             self.patient_state = PatientSchedulingScreen(patient, datetimes_list)
-            PatientNavigationControls(self.update_app_state)
+            ArrowNavigationControls(direction="right", state_func=self.update_app_state)
 
     def display_patient_scheduling_ui(self):
         self.content.clear()
