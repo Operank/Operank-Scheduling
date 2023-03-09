@@ -133,9 +133,30 @@ def load_patients_and_surgeons_from_example_config() -> (
     return patient_list, surgery_list, timeslot_list, operating_rooms, surgeons
 
 
-def test_suggest_feasible_dates(create_dummy_patient_and_surgeries):
-    patient, surgeries = create_dummy_patient_and_surgeries
-    suggest_feasible_dates(patient, surgeries, [], [])
+@pytest.fixture
+def schedule_patients(load_patients_and_surgeons_from_example_config):
+    (
+        patient_list,
+        surgery_list,
+        timeslot_list,
+        operating_rooms,
+        surgeon_list,
+    ) = load_patients_and_surgeons_from_example_config
+
+    operating_rooms = operating_rooms[:2]
+    distribute_timeslots_to_operating_rooms(timeslot_list, operating_rooms)
+    distribute_timeslots_to_days(operating_rooms)
+
+    for operating_room in operating_rooms:
+        operating_room.schedule_timeslots_to_days(datetime.datetime.now())
+
+    return (
+        patient_list,
+        surgery_list,
+        timeslot_list,
+        operating_rooms,
+        surgeon_list,
+    )
 
 
 def test_get_surgeons_by_team():
@@ -172,27 +193,19 @@ def test_find_suitable_surgeons(load_patients_and_surgeons_from_example_config):
         _ = find_suitable_surgeons(procedure, surgeon_list)
 
 
-def test_find_suitable_timeslots(load_patients_and_surgeons_from_example_config):
+def test_find_suitable_timeslots(schedule_patients):
     (
         patient_list,
         surgery_list,
         timeslot_list,
         operating_rooms,
         surgeon_list,
-    ) = load_patients_and_surgeons_from_example_config
-
-    operating_rooms = operating_rooms[:2]
-    distribute_timeslots_to_operating_rooms(timeslot_list, operating_rooms)
-    distribute_timeslots_to_days(operating_rooms)
-
-    for operating_room in operating_rooms:
-        operating_room.schedule_timeslots_to_days(datetime.datetime.now())
+    ) = schedule_patients
 
     for patient in patient_list:
         procedure = get_surgery_by_patient(patient, surgery_list)
         suitable_rooms = find_suitable_operating_rooms(procedure, operating_rooms)
         suitable_surgeons = find_suitable_surgeons(procedure, surgeon_list)
-        valid_timeslots = find_suitable_timeslots(
+        _ = find_suitable_timeslots(
             procedure, suitable_rooms, suitable_surgeons
         )
-        pass
