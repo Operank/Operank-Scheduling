@@ -1,6 +1,7 @@
 from nicegui import ui
 import datetime
 from gui.gui_ui_models import PatientSchedulingUI
+from gui.static_ui_elements import OperankHeader
 from operank_scheduling.models.operank_models import get_all_surgeons
 from operank_scheduling.models.parse_data_to_models import (
     load_operating_rooms_from_json,
@@ -23,6 +24,8 @@ operating_rooms = load_operating_rooms_from_json(
 )
 surgeons = get_all_surgeons()
 
-ui.run(title="Operank", favicon=str(assets_dir / "operank_favicon.jpg"))
-
+OperankHeader()
 PatientSchedulingUI(patient_list, datetimes_list)
+ui.footer()
+
+ui.run(title="Operank", favicon=str(assets_dir / "operank_favicon.jpg"))
