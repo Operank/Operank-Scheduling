@@ -36,10 +36,10 @@ def suggest_feasible_dates(
     rooms: List[OperatingRoom],
     surgeons: List[Surgeon],
 ) -> List:
+    dates = list()
     procedure = get_surgery_by_patient(patient, surgeries)
-    required_teams = procedure.suitable_teams
-    duration = procedure.duration
-    print(procedure, required_teams, duration)
+    print(procedure)
+    return dates
 
 
 def schedule_patients(
