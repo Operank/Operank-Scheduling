@@ -1,12 +1,30 @@
 import pytest
+from typing import List, Tuple
 
 from src.operank_scheduling.algo.patient_assignment import (
     get_surgery_by_patient,
     sort_patients_by_priority,
     suggest_feasible_dates,
-    get_surgeons_by_team
+    get_surgeons_by_team,
+    find_suitable_surgeons,
+    find_suitable_operating_rooms,
 )
-from src.operank_scheduling.models.operank_models import Patient, Surgery, get_all_surgeons
+
+from src.operank_scheduling.models.parse_data_to_models import (
+    load_operating_rooms_from_json,
+    load_patients_from_json,
+)
+
+from src.operank_scheduling.models.operank_models import (
+    Patient,
+    Surgery,
+    OperatingRoom,
+    Surgeon,
+    Timeslot,
+    get_all_surgeons,
+)
+
+from src.operank_scheduling.models.io_utilities import find_project_root
 
 
 def test_patient_sorting():
@@ -91,6 +109,21 @@ def test_surgery_to_patient_link_exception(create_dummy_patient_and_surgeries):
         get_surgery_by_patient(patient, surgeries)
 
 
+@pytest.fixture
+def load_patients_and_surgeons_from_example_config() -> (
+    Tuple[List[Patient], List[Surgery], List[Timeslot], List[OperatingRoom], List[Surgeon]]
+):
+    assets_dir = find_project_root() / "assets"
+    patient_list, surgery_list, timeslot_list = load_patients_from_json(
+        assets_dir / "example_patient_data.json"
+    )
+    operating_rooms = load_operating_rooms_from_json(
+        assets_dir / "example_operating_room_schedule.json"
+    )
+    surgeons = get_all_surgeons()
+    return patient_list, surgery_list, timeslot_list, operating_rooms, surgeons
+
+
 def test_suggest_feasible_dates(create_dummy_patient_and_surgeries):
     patient, surgeries = create_dummy_patient_and_surgeries
     suggest_feasible_dates(patient, surgeries, [], [])
@@ -101,3 +134,30 @@ def test_get_surgeons_by_team():
     breast_team = get_surgeons_by_team("breast", surgeons)
     for surgeon in breast_team:
         assert surgeon.team == "breast".upper()
+
+
+def test_find_suitable_operating_rooms(load_patients_and_surgeons_from_example_config):
+    (
+        patient_list,
+        surgery_list,
+        _,
+        operating_rooms,
+        _
+    ) = load_patients_and_surgeons_from_example_config
+
+    for patient in patient_list:
+        procedure = get_surgery_by_patient(patient, surgery_list)
+        _ = find_suitable_operating_rooms(procedure, operating_rooms)
+
+
+def test_find_suitable_surgeons(load_patients_and_surgeons_from_example_config):
+    (
+        patient_list,
+        surgery_list,
+        _,
+        _,
+        surgeon_list
+    ) = load_patients_and_surgeons_from_example_config
+    for patient in patient_list:
+        procedure = get_surgery_by_patient(patient, surgery_list)
+        _ = find_suitable_surgeons(procedure, surgeon_list)

@@ -61,13 +61,12 @@ def test_get_all_surgeons():
 
 
 def test_load_patients_from_json():
-    patients, surgeries, timeslots = load_patients_from_json(
+    _, _, _ = load_patients_from_json(
         r"G:\Code\operank_scheduling\assets\example_patient_data.json"
     )
-    pass
 
 
 def test_load_operating_rooms_from_json():
-    operating_rooms = load_operating_rooms_from_json(
+    _ = load_operating_rooms_from_json(
         r"G:\Code\operank_scheduling\assets\example_operating_room_schedule.json"
     )
