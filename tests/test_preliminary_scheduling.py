@@ -7,7 +7,8 @@ from src.operank_scheduling.algo.surgery_distribution_models import (
     distribute_timeslots_to_operating_rooms,
 )
 from src.operank_scheduling.models.operank_models import OperatingRoom, Timeslot
-
+from src.operank_scheduling.models.parse_data_to_models import load_operating_rooms_from_json
+from src.operank_scheduling.models.io_utilities import find_project_root
 
 @pytest.fixture
 def scheduling_fixture():
@@ -42,3 +43,17 @@ def test_schedule_to_days_with_non_working_days(scheduling_fixture):
             datetime.datetime(year=2023, month=3, day=12).date(),
             datetime.datetime(year=2023, month=3, day=13).date(),
         ]
+
+
+def test_scheduling_on_real_operating_rooms():
+    root = find_project_root()
+    operating_room_data_file = root / "assets" / "example_operating_room_schedule.json"
+    operating_rooms = load_operating_rooms_from_json(operating_room_data_file)
+
+    # Retain only first two for now
+    or_list = operating_rooms[:2]
+    timeslot_list = [Timeslot(duration=60 * ((i % 3) + 1)) for i in range(10)]
+    distribute_timeslots_to_operating_rooms(timeslot_list, or_list)
+    distribute_timeslots_to_days(or_list)
+    for operating_room in or_list:
+        operating_room.schedule_timeslots_to_days(datetime.datetime.now().date())
