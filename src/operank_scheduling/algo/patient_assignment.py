@@ -60,6 +60,20 @@ def find_suitable_surgeons(
     return suitable_surgeons
 
 
+def find_suitable_timeslots(
+    procedure: Surgery,
+    suitable_rooms: List[OperatingRoom],
+    suitable_surgeons: List[Surgeon],
+):
+    suitable_timeslots = list()
+    for room in suitable_rooms:
+        for day in room.schedule:
+            for timeslot in room.schedule[day]:
+                if procedure.can_fit_in(timeslot):
+                    suitable_timeslots.append((room, day, timeslot))
+    return suitable_timeslots
+
+
 def suggest_feasible_dates(
     patient: Patient,
     surgeries: List[Surgery],

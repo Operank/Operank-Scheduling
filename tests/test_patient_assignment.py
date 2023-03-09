@@ -1,5 +1,6 @@
 import pytest
 from typing import List, Tuple
+import datetime
 
 from src.operank_scheduling.algo.patient_assignment import (
     get_surgery_by_patient,
@@ -8,11 +9,17 @@ from src.operank_scheduling.algo.patient_assignment import (
     get_surgeons_by_team,
     find_suitable_surgeons,
     find_suitable_operating_rooms,
+    find_suitable_timeslots,
 )
 
 from src.operank_scheduling.models.parse_data_to_models import (
     load_operating_rooms_from_json,
     load_patients_from_json,
+)
+
+from src.operank_scheduling.algo.surgery_distribution_models import (
+    distribute_timeslots_to_operating_rooms,
+    distribute_timeslots_to_days,
 )
 
 from src.operank_scheduling.models.operank_models import (
@@ -111,7 +118,9 @@ def test_surgery_to_patient_link_exception(create_dummy_patient_and_surgeries):
 
 @pytest.fixture
 def load_patients_and_surgeons_from_example_config() -> (
-    Tuple[List[Patient], List[Surgery], List[Timeslot], List[OperatingRoom], List[Surgeon]]
+    Tuple[
+        List[Patient], List[Surgery], List[Timeslot], List[OperatingRoom], List[Surgeon]
+    ]
 ):
     assets_dir = find_project_root() / "assets"
     patient_list, surgery_list, timeslot_list = load_patients_from_json(
@@ -142,7 +151,7 @@ def test_find_suitable_operating_rooms(load_patients_and_surgeons_from_example_c
         surgery_list,
         _,
         operating_rooms,
-        _
+        _,
     ) = load_patients_and_surgeons_from_example_config
 
     for patient in patient_list:
@@ -156,8 +165,34 @@ def test_find_suitable_surgeons(load_patients_and_surgeons_from_example_config):
         surgery_list,
         _,
         _,
-        surgeon_list
+        surgeon_list,
     ) = load_patients_and_surgeons_from_example_config
     for patient in patient_list:
         procedure = get_surgery_by_patient(patient, surgery_list)
         _ = find_suitable_surgeons(procedure, surgeon_list)
+
+
+def test_find_suitable_timeslots(load_patients_and_surgeons_from_example_config):
+    (
+        patient_list,
+        surgery_list,
+        timeslot_list,
+        operating_rooms,
+        surgeon_list,
+    ) = load_patients_and_surgeons_from_example_config
+
+    operating_rooms = operating_rooms[:2]
+    distribute_timeslots_to_operating_rooms(timeslot_list, operating_rooms)
+    distribute_timeslots_to_days(operating_rooms)
+
+    for operating_room in operating_rooms:
+        operating_room.schedule_timeslots_to_days(datetime.datetime.now())
+
+    for patient in patient_list:
+        procedure = get_surgery_by_patient(patient, surgery_list)
+        suitable_rooms = find_suitable_operating_rooms(procedure, operating_rooms)
+        suitable_surgeons = find_suitable_surgeons(procedure, surgeon_list)
+        valid_timeslots = find_suitable_timeslots(
+            procedure, suitable_rooms, suitable_surgeons
+        )
+        pass
