@@ -7,7 +7,7 @@ surgery_to_team_mapping = map_surgery_to_team()
 
 
 class OperatingRoom:
-    def __init__(self, id: str, properties: List[str]) -> None:
+    def __init__(self, id: str, properties: List[str] = []) -> None:
         self.id = id
         self.properties = properties
         self.timeslots_to_schedule: List[Timeslot] = list()
@@ -17,6 +17,11 @@ class OperatingRoom:
 
     def __repr__(self) -> str:
         return self.id
+
+    def add_non_working_days(self, days_to_add: List[int]):
+        for day in days_to_add:
+            if day not in self.non_working_days:
+                self.non_working_days.append(day)
 
     def _get_next_working_days(
         self, current_day: datetime.date, days_to_generate: int

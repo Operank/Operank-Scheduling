@@ -1,7 +1,14 @@
 import json
-from typing import Tuple
+from typing import Tuple, List
 
-from src.operank_scheduling.models.operank_models import Patient, Surgery, Timeslot
+from src.operank_scheduling.models.operank_models import (
+    Patient,
+    Surgery,
+    Timeslot,
+    OperatingRoom,
+)
+
+from .enums import weekdays_to_numbers
 
 """
 Read patient data given in the format:
@@ -66,3 +73,32 @@ def load_patients_from_json(jsonpath: str):
         timeslots.append(timeslot)
 
     return patients, surgeries, timeslots
+
+
+def find_non_working_days_for_operating_room(schedule: dict) -> List[int]:
+    non_working_days = list(range(0, 7))
+    working_days = list(schedule.keys())
+
+    for day in working_days:
+        day_value = weekdays_to_numbers[day]
+        non_working_days.remove(day_value)
+    return non_working_days
+
+
+def parse_operating_room_json_to_model(operating_room_data: str) -> OperatingRoom:
+    operating_room = OperatingRoom(id=operating_room_data["id"])
+    non_working_day_list = find_non_working_days_for_operating_room(
+        operating_room_data["schedule"]
+    )
+    operating_room.add_non_working_days(non_working_day_list)
+    return operating_room
+
+
+def load_operating_rooms_from_json(jsonpath: str) -> List[OperatingRoom]:
+    operating_rooms = list()
+    with open(jsonpath, "r") as json_fp:
+        loaded_operating_rooms = json.load(json_fp)
+    loaded_operating_rooms = loaded_operating_rooms["operating_rooms"]
+    for room in loaded_operating_rooms:
+        operating_rooms.append(parse_operating_room_json_to_model(room))
+    return operating_rooms

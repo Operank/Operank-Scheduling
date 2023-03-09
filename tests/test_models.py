@@ -3,9 +3,10 @@ from src.operank_scheduling.models.operank_models import (
     Timeslot,
     get_all_surgeons,
 )
-from src.operank_scheduling.models.parse_patient_data import (
+from src.operank_scheduling.models.parse_data_to_models import (
     parse_single_json_block,
     load_patients_from_json,
+    load_operating_rooms_from_json,
 )
 
 
@@ -64,3 +65,9 @@ def test_load_patients_from_json():
         r"G:\Code\operank_scheduling\assets\example_patient_data.json"
     )
     pass
+
+
+def test_load_operating_rooms_from_json():
+    operating_rooms = load_operating_rooms_from_json(
+        r"G:\Code\operank_scheduling\assets\example_operating_room_schedule.json"
+    )
