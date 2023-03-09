@@ -194,3 +194,8 @@ def distribute_timeslots_to_days(rooms: List[OperatingRoom]):
                     room.timeslots_by_day.append(daily_timeslots)
         else:
             logger.warning(f"[Optimization] Failed to solve, status: {status}")
+
+
+def perform_preliminary_scheduling(timeslot_list: List[Timeslot], operating_rooms: List[OperatingRoom]):
+    distribute_timeslots_to_operating_rooms(timeslot_list, operating_rooms)
+    distribute_timeslots_to_days(operating_rooms)
