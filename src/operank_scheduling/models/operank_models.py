@@ -2,6 +2,7 @@ import datetime
 from typing import List
 
 from .parse_hopital_data import load_surgeon_data, map_surgery_to_team
+from src.operank_scheduling.models.enums import surgeon_teams
 
 surgery_to_team_mapping = map_surgery_to_team()
 
@@ -84,14 +85,25 @@ class Surgery:
         self.name = name.upper()
         self.duration = duration_in_minutes
         self.requirements = requirements
-        self.suitable_teams = surgery_to_team_mapping.get(self.name, [])
+        self.suitable_teams = list()
+        self.suitable_wards = list()
         self.uuid = uuid
+
+        self.assign_team_or_ward()
 
     def __repr__(self) -> str:
         return f"{self.name} ({self.duration}m)"
 
     def can_fit_in(self, timeslot: Timeslot) -> bool:
         return self.duration in timeslot
+
+    def assign_team_or_ward(self):
+        suitable_teams = surgery_to_team_mapping.get(self.name, [])
+        for value in suitable_teams:
+            if value.upper() in surgeon_teams:
+                self.suitable_teams.append(value.upper())
+            else:
+                self.suitable_wards.append(int(value))
 
 
 class Patient:
