@@ -1,5 +1,5 @@
 from nicegui import ui
-from typing import List, Callable
+from typing import List, Callable, Tuple
 from operank_scheduling.models.operank_models import Patient, Surgery, OperatingRoom
 from operank_scheduling.algo.patient_assignment import suggest_feasible_dates
 import datetime
@@ -24,26 +24,27 @@ class PatientSchedulingScreen:
 
 
 class DateSelectionOptionsRow:
-    def __init__(self, list_of_dates: List[datetime.datetime]) -> None:
+    def __init__(self, list_of_slots: List[Tuple[str, datetime.datetime]]) -> None:
         with ui.row():
-            for idx, date in enumerate(list_of_dates):
-                DateSelectionCard(date, option_index=idx)
+            for idx, slot in enumerate(list_of_slots):
+                DateSelectionCard(slot, option_index=idx)
 
 
 class DateSelectionCard(ui.card):
-    def __init__(self, date_and_time: datetime.datetime, option_index: int):
+    def __init__(self, slot: Tuple[str, datetime.datetime], option_index: int):
         super().__init__()
-        self.displayed_date = datetime.datetime.strftime(
-            date_and_time, "%d/%m/%Y @ %H:%M"
-        )
+        self.displayed_date = datetime.datetime.strftime(slot[1], "%d/%m/%Y @ %H:%M")
+        self.operating_room = slot[0]
         self.option_index = option_index
         with self:
             col = ui.column()
             with col.classes("items-center"):
-                ui.label(self.displayed_date)
-            self.on("click", self.button_cb)
-            self.on("mouseover", self.highlight)
-            self.on("mouseout", self.unhighlight)
+                FormattedTextRow(text=self.operating_room, icon="location_on")
+                FormattedTextRow(text=self.displayed_date, icon="event")
+
+        self.on("click", self.button_cb)
+        self.on("mouseover", self.highlight)
+        self.on("mouseout", self.unhighlight)
 
     def button_cb(self):
         ui.notify(self.option_index, closeBtn=True)
@@ -57,7 +58,7 @@ class DateSelectionCard(ui.card):
 
 
 class FormattedTextRow:
-    def __init__(self, title: str, text: str, icon: str = "") -> None:
+    def __init__(self, title: str = "", text: str = "", icon: str = "") -> None:
         with ui.row().classes("items-center"):
             if icon != "":
                 ui.icon(icon)
@@ -108,7 +109,7 @@ class PatientSchedulingUI:
         feasible_slots = suggest_feasible_dates(
             patient, self.surgery_list, self.rooms, []
         )
-        return [slot[1] for slot in feasible_slots]
+        return [(slot[0].id, slot[1]) for slot in feasible_slots]
 
     def draw_inner_ui(self, patient, datetimes_list):
         with self.content.classes("items-center"):
