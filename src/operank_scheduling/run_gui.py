@@ -13,11 +13,6 @@ from operank_scheduling.algo.surgery_distribution_models import (
 )
 from operank_scheduling.algo.patient_assignment import sort_patients_by_priority
 
-datetimes_list = [
-    datetime.datetime.now(),
-    datetime.datetime.now() + datetime.timedelta(days=1),
-    datetime.datetime.now() + datetime.timedelta(days=13),
-]
 
 assets_dir = find_project_root() / "assets"
 patient_list, surgery_list, timeslot_list = load_patients_from_json(
