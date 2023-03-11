@@ -115,7 +115,7 @@ class Patient:
         referrer: str,
         estimated_duration_m: int,
         priority: int,
-        uuid: int,
+        uuid: int
     ) -> None:
         self.name = name
         self.patient_id = patient_id
@@ -124,6 +124,10 @@ class Patient:
         self.duration_m = estimated_duration_m
         self.priority = priority
         self.uuid = uuid
+        self.is_scheduled = False
+
+    def mark_as_done(self):
+        self.is_scheduled = True
 
 
 class Surgeon:
@@ -149,7 +153,37 @@ def get_all_surgeons() -> List[Surgeon]:
     return surgeons_list
 
 
-def get_operating_room_by_name(name: str, operating_rooms: List[OperatingRoom]) -> OperatingRoom:
+def get_operating_room_by_name(
+    name: str, operating_rooms: List[OperatingRoom]
+) -> OperatingRoom:
     for operating_room in operating_rooms:
         if operating_room.id == name:
             return operating_room
+
+
+def replace_timeslot_by_surgery(schedule: List, timeslot: Timeslot, surgery: Surgery):
+    index_to_replace = schedule.index(timeslot)
+    schedule[index_to_replace] = surgery
+
+
+def get_surgery_by_name(name: str, surgeries: List[Surgery]):
+    for surgery in surgeries:
+        if name.upper() == surgery.name.upper():
+            return surgery
+
+
+def schedule_patient_to_timeslot(
+    patient: Patient,
+    date: datetime.datetime,
+    timeslot: datetime.datetime,
+    operating_room: OperatingRoom,
+    surgeries: List[Surgery],
+    surgeon: Surgeon = None,
+):
+    try:
+        surgery = get_surgery_by_name(patient.surgery_name, surgeries)
+        replace_timeslot_by_surgery(operating_room.schedule[date], timeslot, surgery)
+        patient.mark_as_done()
+    except ValueError:
+        raise ValueError("Some mismatch found?")
+    return True
