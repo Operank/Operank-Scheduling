@@ -1,14 +1,29 @@
 from nicegui import ui
-from typing import List, Callable, Tuple
-from operank_scheduling.models.operank_models import Patient, Surgery, OperatingRoom
+from typing import List, Callable, Tuple, Union, Dict
+from operank_scheduling.models.operank_models import Patient, Surgery, OperatingRoom, get_operating_room_by_name
 from operank_scheduling.algo.patient_assignment import suggest_feasible_dates
 import datetime
+
+AppState = Dict[str, List[Union[Patient, Surgery, OperatingRoom]]]
+
+
+def fetch_valid_timeslots(patient: Patient, app_state: AppState):
+    surgery_list = app_state["surgeries"]
+    operating_rooms = app_state["rooms"]
+    feasible_slots = suggest_feasible_dates(
+        patient, surgery_list, operating_rooms, []
+    )
+    return [(slot[0].id, slot[1]) for slot in feasible_slots]
 
 
 class PatientSchedulingScreen:
     def __init__(
-        self, patient: Patient, suggested_dates: List[datetime.datetime]
+        self, app_state: AppState, patient_index: int
     ) -> None:
+
+        patient = app_state["patients"][patient_index]
+        available_slots = fetch_valid_timeslots(patient, app_state)
+
         with ui.card().classes("m-auto"):
             with ui.card().classes("m-auto"):
                 FormattedTextRow(
@@ -20,40 +35,43 @@ class PatientSchedulingScreen:
                     text=patient.surgery_name,
                     icon="health_and_safety",
                 )
-            DateSelectionOptionsRow(suggested_dates)
+            DateSelectionOptionsRow(patient, available_slots, app_state)
 
 
 class DateSelectionOptionsRow:
-    def __init__(self, list_of_slots: List[Tuple[str, datetime.datetime]]) -> None:
+    def __init__(self, patient: Patient, list_of_slots: List[Tuple[str, datetime.datetime]], app_state: AppState) -> None:
         with ui.row():
-            for idx, slot in enumerate(list_of_slots):
-                DateSelectionCard(slot, option_index=idx)
+            for slot in list_of_slots:
+                DateSelectionCard(patient, slot, app_state)
 
 
 class DateSelectionCard(ui.card):
-    def __init__(self, slot: Tuple[str, datetime.datetime], option_index: int):
+    def __init__(self, patient: Patient, slot: Tuple[str, datetime.datetime], app_state: AppState):
         super().__init__()
         self.displayed_date = datetime.datetime.strftime(slot[1], "%d/%m/%Y @ %H:%M")
-        self.operating_room = slot[0]
-        self.option_index = option_index
+        self.operating_room_name = slot[0]
+        self.patient = patient
+        self.slot_date = slot[1]
+        self.app_state = app_state
         with self:
             col = ui.column()
             with col.classes("items-center"):
-                FormattedTextRow(text=self.operating_room, icon="location_on")
+                FormattedTextRow(text=self.operating_room_name, icon="location_on")
                 FormattedTextRow(text=self.displayed_date, icon="event")
 
-        self.on("click", self.button_cb)
-        self.on("mouseover", self.highlight)
-        self.on("mouseout", self.unhighlight)
+        self.on("click", self.select_slot)
+        self.on("mouseover", self.hover_highlight)
+        self.on("mouseout", self.hover_unhighlight)
 
-    def button_cb(self):
-        ui.notify(self.option_index, closeBtn=True)
-        return self.option_index
+    def select_slot(self):
+        operating_room = get_operating_room_by_name(self.operating_room_name, self.app_state["rooms"])
+        ui.notify(f"Found {operating_room}")
+        ui.notify(f"Scheduled {self.patient.name} for {self.slot_date}", closeBtn=True)
 
-    def highlight(self):
+    def hover_highlight(self):
         self.classes(add="bg-blue-400")
 
-    def unhighlight(self):
+    def hover_unhighlight(self):
         self.classes(remove="bg-blue-400")
 
 
@@ -80,11 +98,9 @@ class ArrowNavigationControls:
         icon.on("click", callback)
 
     def next_cb(self):
-        ui.notify("Moving to next patient", closeBtn=True)
         self.state_func("up")
 
     def prev_cb(self):
-        ui.notify("Moving to previous patient", closeBtn=True)
         self.state_func("down")
 
 
@@ -96,32 +112,27 @@ class PatientSchedulingUI:
         rooms: List[OperatingRoom],
     ) -> None:
         self.content = ui.row()
-        self.patient_list = patient_list
-        self.surgery_list = surgery_list
-        self.rooms = rooms
+        self.scheduling_state: AppState = {
+            "patients" : patient_list,
+            "surgeries" : surgery_list,
+            "rooms" : rooms
+        }
 
+        self.patients_to_schedule = len(patient_list)
         self.current_patient_idx = 0
-        self.datetimes_list = self.fetch_valid_timeslots()
         self.display_patient_scheduling_ui()
 
-    def fetch_valid_timeslots(self):
-        patient = self.patient_list[self.current_patient_idx % len(self.patient_list)]
-        feasible_slots = suggest_feasible_dates(
-            patient, self.surgery_list, self.rooms, []
-        )
-        return [(slot[0].id, slot[1]) for slot in feasible_slots]
-
-    def draw_inner_ui(self, patient, datetimes_list):
+    def draw_inner_ui(self, app_state: AppState, patient_index: int):
         with self.content.classes("items-center"):
             ArrowNavigationControls(direction="left", state_func=self.update_app_state)
-            self.patient_state = PatientSchedulingScreen(patient, datetimes_list)
+            PatientSchedulingScreen(app_state, patient_index)
             ArrowNavigationControls(direction="right", state_func=self.update_app_state)
 
     def display_patient_scheduling_ui(self):
         self.content.clear()
         self.draw_inner_ui(
-            self.patient_list[self.current_patient_idx % len(self.patient_list)],
-            self.datetimes_list,
+            self.scheduling_state,
+            self.current_patient_idx,
         )
 
     def update_app_state(self, direction: str):
@@ -130,8 +141,8 @@ class PatientSchedulingUI:
             self.current_patient_idx += 1
         else:
             self.current_patient_idx -= 1
-        self.datetimes_list = self.fetch_valid_timeslots()
+
         self.draw_inner_ui(
-            self.patient_list[self.current_patient_idx % len(self.patient_list)],
-            self.datetimes_list,
+            self.scheduling_state,
+            self.current_patient_idx,
         )

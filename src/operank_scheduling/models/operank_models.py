@@ -147,3 +147,9 @@ def get_all_surgeons() -> List[Surgeon]:
             Surgeon(name=name, surgeon_id=surgeon_id, ward=ward, team=team)
         )
     return surgeons_list
+
+
+def get_operating_room_by_name(name: str, operating_rooms: List[OperatingRoom]) -> OperatingRoom:
+    for operating_room in operating_rooms:
+        if operating_room.id == name:
+            return operating_room
