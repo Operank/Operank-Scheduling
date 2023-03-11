@@ -48,7 +48,10 @@ def parse_single_json_block(patient_data: dict) -> Tuple[Patient, Surgery, Times
     )
 
     surgery = Surgery(
-        name=surgery_name, duration_in_minutes=estimated_duration_m, uuid=auto_id
+        name=surgery_name,
+        duration_in_minutes=estimated_duration_m,
+        uuid=auto_id,
+        patient=Patient,
     )
 
     timeslot = Timeslot(duration=estimated_duration_m)
@@ -57,7 +60,9 @@ def parse_single_json_block(patient_data: dict) -> Tuple[Patient, Surgery, Times
     return patient, surgery, timeslot
 
 
-def load_patients_from_json(jsonpath: str) -> Tuple[List[Patient], List[Surgery], List[Timeslot]]:
+def load_patients_from_json(
+    jsonpath: str,
+) -> Tuple[List[Patient], List[Surgery], List[Timeslot]]:
     patients = list()
     surgeries = list()
     timeslots = list()
