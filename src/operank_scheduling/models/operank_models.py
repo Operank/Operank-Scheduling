@@ -1,5 +1,5 @@
 import datetime
-from typing import List, Dict
+from typing import List, Dict, Union
 
 from .parse_hopital_data import load_surgeon_data, map_surgery_to_team
 from operank_scheduling.models.enums import surgeon_teams
@@ -13,7 +13,7 @@ class OperatingRoom:
         self.properties = properties
         self.timeslots_to_schedule: List[Timeslot] = list()
         self.timeslots_by_day: List[List[Timeslot]] = list()
-        self.schedule: Dict[datetime.date, List[Timeslot]] = dict()
+        self.schedule: Dict[datetime.date, List[Union[Timeslot, Surgery]]] = dict()
         self.non_working_days = [4, 5]  # 4: Friday, 5: Saturday
 
     def __repr__(self) -> str:
@@ -74,12 +74,37 @@ class Timeslot:
         raise IndexError("Surgery is too long - no appropriate bin found")
 
 
+class Patient:
+    def __init__(
+        self,
+        name: str,
+        patient_id: str,
+        surgery_name: str,
+        referrer: str,
+        estimated_duration_m: int,
+        priority: int,
+        uuid: int
+    ) -> None:
+        self.name = name
+        self.patient_id = patient_id
+        self.surgery_name = surgery_name
+        self.referrer = referrer
+        self.duration_m = estimated_duration_m
+        self.priority = priority
+        self.uuid = uuid
+        self.is_scheduled = False
+
+    def mark_as_done(self):
+        self.is_scheduled = True
+
+
 class Surgery:
     def __init__(
         self,
         name: str,
         duration_in_minutes: int,
         uuid: int,
+        patient: Patient,
         requirements: List[str] = list(),
     ) -> None:
         self.name = name.upper()
@@ -104,30 +129,6 @@ class Surgery:
                 self.suitable_teams.append(value.upper())
             else:
                 self.suitable_wards.append(int(value))
-
-
-class Patient:
-    def __init__(
-        self,
-        name: str,
-        patient_id: str,
-        surgery_name: str,
-        referrer: str,
-        estimated_duration_m: int,
-        priority: int,
-        uuid: int
-    ) -> None:
-        self.name = name
-        self.patient_id = patient_id
-        self.surgery_name = surgery_name
-        self.referrer = referrer
-        self.duration_m = estimated_duration_m
-        self.priority = priority
-        self.uuid = uuid
-        self.is_scheduled = False
-
-    def mark_as_done(self):
-        self.is_scheduled = True
 
 
 class Surgeon:
