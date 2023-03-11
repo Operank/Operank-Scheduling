@@ -90,8 +90,8 @@ def create_dummy_patient_and_surgeries():
         estimated_duration_m=3,
         uuid=1,
     )
-    s1 = Surgery(name="a", duration_in_minutes=65, uuid=1)
-    s2 = Surgery(name="a", duration_in_minutes=95, uuid=2)
+    s1 = Surgery(name="a", duration_in_minutes=65, uuid=1, patient=patient)
+    s2 = Surgery(name="a", duration_in_minutes=95, uuid=2, patient=patient)
     surgeries = [s1, s2]
     return (patient, surgeries)
 

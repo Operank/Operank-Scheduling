@@ -18,7 +18,7 @@ def test_timeslot():
 
 
 def test_timeslot_surgery_interaction():
-    s = Surgery(name="Colostomy", duration_in_minutes=75, uuid=1)
+    s = Surgery(name="Colostomy", duration_in_minutes=75, uuid=1, patient=None)
     t1 = Timeslot(duration=60)
     t2 = Timeslot(duration=120)
 
