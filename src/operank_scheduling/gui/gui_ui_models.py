@@ -23,7 +23,9 @@ def fetch_valid_timeslots(patient: Patient, app_state: AppState):
 
 
 class PatientSchedulingScreen:
-    def __init__(self, app_state: AppState, patient_index: int, refresh_function: Callable) -> None:
+    def __init__(
+        self, app_state: AppState, patient_index: int, refresh_function: Callable
+    ) -> None:
         patient = app_state["patients"][patient_index]
         available_slots = fetch_valid_timeslots(patient, app_state)
 
@@ -38,7 +40,9 @@ class PatientSchedulingScreen:
                     text=patient.surgery_name,
                     icon="health_and_safety",
                 )
-            DateSelectionOptionsRow(patient, available_slots, app_state, refresh_function)
+            DateSelectionOptionsRow(
+                patient, available_slots, app_state, refresh_function
+            )
 
 
 class DateSelectionOptionsRow:
@@ -47,7 +51,7 @@ class DateSelectionOptionsRow:
         patient: Patient,
         list_of_slots: List[Tuple[str, datetime.datetime, Timeslot]],
         app_state: AppState,
-        update_callback: Callable
+        update_callback: Callable,
     ) -> None:
         with ui.row():
             for slot in list_of_slots:
@@ -60,7 +64,7 @@ class DateSelectionCard(ui.card):
         patient: Patient,
         slot: Tuple[str, datetime.datetime, Timeslot],
         app_state: AppState,
-        update_callback: Callable
+        update_callback: Callable,
     ):
         super().__init__()
         self.displayed_date = datetime.datetime.strftime(slot[1], "%d/%m/%Y @ %H:%M")
@@ -157,17 +161,22 @@ class PatientSchedulingUI:
 
     def draw_inner_ui(self, app_state: AppState, patient_index: int):
         with self.content.classes("items-center"):
-            ArrowNavigationControls(direction="left", state_func=self.update_app_state)
-            PatientSchedulingScreen(app_state, patient_index, refresh_function=self.update_app_state)
-            ArrowNavigationControls(direction="right", state_func=self.update_app_state)
-            ui.linear_progress(
-                value=(
-                    self.scheduling_state["scheduled_patients"]
-                    / self.patients_to_schedule
-                ),
-                show_value=False,
-                size="20px",
-            )
+            if self.scheduling_state["scheduled_patients"] == self.patients_to_schedule:
+                self.draw_finish_screen()
+            else:
+                ArrowNavigationControls(direction="left", state_func=self.update_app_state)
+                PatientSchedulingScreen(
+                    app_state, patient_index, refresh_function=self.update_app_state
+                )
+                ArrowNavigationControls(direction="right", state_func=self.update_app_state)
+                ui.linear_progress(
+                    value=(
+                        self.scheduling_state["scheduled_patients"]
+                        / self.patients_to_schedule
+                    ),
+                    show_value=False,
+                    size="20px",
+                )
 
     def display_patient_scheduling_ui(self):
         self.content.clear()
@@ -177,13 +186,21 @@ class PatientSchedulingUI:
         )
 
     def update_app_state(self, direction: str = ""):
-        self.content.clear()
         if direction == "up":
             self.current_patient_idx += 1
         elif direction == "down":
             self.current_patient_idx -= 1
 
-        self.draw_inner_ui(
-            self.scheduling_state,
-            self.current_patient_idx % self.patients_to_schedule,
-        )
+        self.display_patient_scheduling_ui()
+
+    def draw_finish_screen(self):
+        self.content.clear()
+        for room in self.scheduling_state["rooms"]:
+            with ui.card():
+                ui.label(f"Room: {room.id}")
+                for day in room.schedule:
+                    with ui.card():
+                        ui.label(f"Day: {day}")
+                        for surgery in room.schedule[day]:
+                            ui.label(f"{surgery.name}")
+                            ui.label(f"{surgery.duration} minutes")

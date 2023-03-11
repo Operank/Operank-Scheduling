@@ -1,3 +1,4 @@
+import os
 from nicegui import ui
 import datetime
 from gui.gui_ui_models import PatientSchedulingUI
@@ -33,4 +34,5 @@ OperankHeader()
 PatientSchedulingUI(patient_list, surgery_list, operating_rooms)
 ui.footer()
 
+os.environ["MATPLOTLIB"] = "false"
 ui.run(title="Operank", favicon=str(assets_dir / "operank_favicon.jpg"))
