@@ -72,9 +72,10 @@ def find_suitable_timeslots(
     suitable_timeslots = list()
     for room in suitable_rooms:
         for day in room.schedule:
-            for timeslot in room.schedule[day]:
-                if procedure.can_fit_in(timeslot):
-                    suitable_timeslots.append((room, day, timeslot))
+            for event in room.schedule[day]:
+                if isinstance(event, Timeslot):
+                    if procedure.can_fit_in(event):
+                        suitable_timeslots.append((room, day, event))
 
     minimal_timeslot = min(suitable_timeslots, key=lambda x: x[2].duration)
     suitable_minimal_timeslots = [
