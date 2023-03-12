@@ -73,6 +73,7 @@ class PatientSchedulingScreen(StateManager):
                     text=patient.surgery_name,
                     icon="health_and_safety",
                 )
+                FormattedTextRow(title="Priority:", text=patient.priority, icon="low_priority")
             DateSelectionOptionsRow(
                 patient, available_slots, app_state, refresh_function
             )
@@ -231,5 +232,6 @@ class OperatingRoomScheduleScreen:
                     with ui.card():
                         ui.label(f"Day: {day}")
                         for surgery in room.schedule[day]:
-                            ui.label(f"{surgery.name}")
-                            ui.label(f"{surgery.duration} minutes")
+                            with ui.card():
+                                ui.label(f"{surgery.name}")
+                                ui.label(f"{surgery.duration} minutes")
