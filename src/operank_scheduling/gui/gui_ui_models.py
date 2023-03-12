@@ -15,7 +15,7 @@ from enum import Enum, auto
 
 
 class UIScreen(Enum):
-    SCHEDULING = auto(),
+    SCHEDULING = auto()
     ROOM_SCHEDULE_DISPLAY = auto()
 
 
@@ -34,6 +34,7 @@ class AppState:
         self.current_screen = UIScreen.SCHEDULING
         self.num_scheduled_patients = 0
         self.canvas = ui.row().classes("m-auto")
+        self.current_patient_idx = 0
 
 
 def fetch_valid_timeslots(patient: Patient, app_state: AppState):
@@ -73,7 +74,9 @@ class PatientSchedulingScreen(StateManager):
                     text=patient.surgery_name,
                     icon="health_and_safety",
                 )
-                FormattedTextRow(title="Priority:", text=patient.priority, icon="low_priority")
+                FormattedTextRow(
+                    title="Priority:", text=patient.priority, icon="low_priority"
+                )
             DateSelectionOptionsRow(
                 patient, available_slots, app_state, refresh_function
             )
@@ -130,13 +133,13 @@ class DateSelectionCard(ui.card):
             self.slot_date,
             self.timeslot,
             operating_room,
-            self.app_state.surgeries
+            self.app_state.surgeries,
         )
         ui.notify(f"Scheduled {self.patient.name} for {self.slot_date}", closeBtn=True)
         self.app_state.patients.remove(self.patient)
         self.app_state.num_scheduled_patients += 1
         self.classes(add="bg-green-400")
-        self.update_callback()
+        self.update_callback("reset")
 
     def hover_highlight(self):
         self.classes(add="bg-blue-400")
@@ -179,7 +182,6 @@ class PatientSchedulingUI:
         self.app_state = app_state
         self.state_update_cb = state_update_cb
         self.patients_to_schedule = len(self.app_state.patients)
-        self.current_patient_idx = 0
         self.display_patient_scheduling_ui()
 
     def draw_inner_ui(self, app_state: AppState, patient_index: int):
@@ -199,24 +201,27 @@ class PatientSchedulingUI:
                 )
                 ui.linear_progress(
                     value=(
-                        self.app_state.num_scheduled_patients / self.patients_to_schedule
+                        self.app_state.num_scheduled_patients
+                        / self.patients_to_schedule
                     ),
                     show_value=False,
-                    size="20px",
+                    size="30px",
                 )
 
     def display_patient_scheduling_ui(self):
         self.app_state.canvas.clear()
         self.draw_inner_ui(
             self.app_state,
-            self.current_patient_idx % self.patients_to_schedule,
+            self.app_state.current_patient_idx % self.patients_to_schedule,
         )
 
     def update_app_state(self, direction: str = ""):
         if direction == "up":
-            self.current_patient_idx += 1
+            self.app_state.current_patient_idx += 1
         elif direction == "down":
-            self.current_patient_idx -= 1
+            self.app_state.current_patient_idx -= 1
+        elif direction == "reset":
+            self.app_state.current_patient_idx = 0
 
         self.display_patient_scheduling_ui()
 
