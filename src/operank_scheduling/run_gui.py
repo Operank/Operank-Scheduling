@@ -1,7 +1,7 @@
 import os
 from nicegui import ui
 import datetime
-from gui.gui_ui_models import PatientSchedulingUI
+from gui.gui_ui_models import StateManager, AppState
 from gui.static_ui_elements import OperankHeader
 from operank_scheduling.models.operank_models import get_all_surgeons
 from operank_scheduling.models.parse_data_to_models import (
@@ -30,8 +30,10 @@ perform_preliminary_scheduling(timeslot_list, operating_rooms)
 for operating_room in operating_rooms:
     operating_room.schedule_timeslots_to_days(datetime.datetime.now().date())
 
+app_state = AppState(patient_list, operating_rooms, surgeons, surgery_list)
+
 OperankHeader()
-PatientSchedulingUI(patient_list, surgery_list, operating_rooms)
+StateManager(app_state)
 ui.footer()
 
 os.environ["MATPLOTLIB"] = "false"

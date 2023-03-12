@@ -1,5 +1,5 @@
 from nicegui import ui
-from typing import List, Callable, Tuple, Union, Dict
+from typing import List, Callable, Tuple
 from operank_scheduling.models.operank_models import (
     Patient,
     Surgery,
@@ -11,22 +11,55 @@ from operank_scheduling.models.operank_models import (
 )
 from operank_scheduling.algo.patient_assignment import suggest_feasible_dates
 import datetime
+from enum import Enum, auto
 
-AppState = Dict[str, List[Union[Patient, Surgery, OperatingRoom, Surgeon]]]
+
+class UIScreen(Enum):
+    SCHEDULING = auto(),
+    ROOM_SCHEDULE_DISPLAY = auto()
+
+
+class AppState:
+    def __init__(
+        self,
+        patients: List[Patient],
+        rooms: List[OperatingRoom],
+        surgeons: List[Surgeon],
+        surgeries: List[Surgery],
+    ) -> None:
+        self.patients = patients
+        self.rooms = rooms
+        self.surgeons = surgeons
+        self.surgeries = surgeries
+        self.current_screen = UIScreen.SCHEDULING
+        self.num_scheduled_patients = 0
+        self.canvas = ui.row().classes("m-auto")
 
 
 def fetch_valid_timeslots(patient: Patient, app_state: AppState):
-    surgery_list = app_state["surgeries"]
-    operating_rooms = app_state["rooms"]
+    surgery_list = app_state.surgeries
+    operating_rooms = app_state.rooms
     dates = suggest_feasible_dates(patient, surgery_list, operating_rooms, [])
     return [(date[0].id, date[1], date[2]) for date in dates]
 
 
-class PatientSchedulingScreen:
+class StateManager:
+    def __init__(self, app_state: AppState) -> None:
+        self.app_state = app_state
+        self.update_app_state()
+
+    def update_app_state(self):
+        if self.app_state.current_screen is UIScreen.SCHEDULING:
+            PatientSchedulingUI(self.app_state, self.update_app_state)
+        elif self.app_state.current_screen == UIScreen.ROOM_SCHEDULE_DISPLAY:
+            OperatingRoomScheduleScreen(self.app_state, self.update_app_state)
+
+
+class PatientSchedulingScreen(StateManager):
     def __init__(
         self, app_state: AppState, patient_index: int, refresh_function: Callable
     ) -> None:
-        patient = app_state["patients"][patient_index]
+        patient = app_state.patients[patient_index]
         available_slots = fetch_valid_timeslots(patient, app_state)
 
         with ui.card().classes("m-auto"):
@@ -89,18 +122,18 @@ class DateSelectionCard(ui.card):
             return
 
         operating_room = get_operating_room_by_name(
-            self.operating_room_name, self.app_state["rooms"]
+            self.operating_room_name, self.app_state.rooms
         )
         schedule_patient_to_timeslot(
             self.patient,
             self.slot_date,
             self.timeslot,
             operating_room,
-            self.app_state["surgeries"],
+            self.app_state.surgeries
         )
         ui.notify(f"Scheduled {self.patient.name} for {self.slot_date}", closeBtn=True)
-        self.app_state["patients"].remove(self.patient)
-        self.app_state["scheduled_patients"] += 1
+        self.app_state.patients.remove(self.patient)
+        self.app_state.num_scheduled_patients += 1
         self.classes(add="bg-green-400")
         self.update_callback()
 
@@ -141,47 +174,40 @@ class ArrowNavigationControls:
 
 
 class PatientSchedulingUI:
-    def __init__(
-        self,
-        patient_list: List[Patient],
-        surgery_list: List[Surgery],
-        rooms: List[OperatingRoom],
-    ) -> None:
-        self.content = ui.row()
-        self.scheduling_state: AppState = {
-            "patients": patient_list,
-            "surgeries": surgery_list,
-            "rooms": rooms,
-            "scheduled_patients": 0,
-        }
-
-        self.patients_to_schedule = len(patient_list)
+    def __init__(self, app_state: AppState, state_update_cb: Callable) -> None:
+        self.app_state = app_state
+        self.state_update_cb = state_update_cb
+        self.patients_to_schedule = len(self.app_state.patients)
         self.current_patient_idx = 0
         self.display_patient_scheduling_ui()
 
     def draw_inner_ui(self, app_state: AppState, patient_index: int):
-        with self.content.classes("items-center"):
-            if self.scheduling_state["scheduled_patients"] == self.patients_to_schedule:
-                self.draw_finish_screen()
+        with self.app_state.canvas.classes("items-center"):
+            if self.app_state.num_scheduled_patients == self.patients_to_schedule:
+                self.app_state.current_screen = UIScreen.ROOM_SCHEDULE_DISPLAY
+                self.state_update_cb()
             else:
-                ArrowNavigationControls(direction="left", state_func=self.update_app_state)
+                ArrowNavigationControls(
+                    direction="left", state_func=self.update_app_state
+                )
                 PatientSchedulingScreen(
                     app_state, patient_index, refresh_function=self.update_app_state
                 )
-                ArrowNavigationControls(direction="right", state_func=self.update_app_state)
+                ArrowNavigationControls(
+                    direction="right", state_func=self.update_app_state
+                )
                 ui.linear_progress(
                     value=(
-                        self.scheduling_state["scheduled_patients"]
-                        / self.patients_to_schedule
+                        self.app_state.num_scheduled_patients / self.patients_to_schedule
                     ),
                     show_value=False,
                     size="20px",
                 )
 
     def display_patient_scheduling_ui(self):
-        self.content.clear()
+        self.app_state.canvas.clear()
         self.draw_inner_ui(
-            self.scheduling_state,
+            self.app_state,
             self.current_patient_idx % self.patients_to_schedule,
         )
 
@@ -193,9 +219,12 @@ class PatientSchedulingUI:
 
         self.display_patient_scheduling_ui()
 
-    def draw_finish_screen(self):
-        self.content.clear()
-        for room in self.scheduling_state["rooms"]:
+
+class OperatingRoomScheduleScreen:
+    def __init__(self, app_state: AppState, update_interface_cb: Callable) -> None:
+        self.app_state = app_state
+        app_state.canvas.clear()
+        for room in self.app_state.rooms:
             with ui.card():
                 ui.label(f"Room: {room.id}")
                 for day in room.schedule:
