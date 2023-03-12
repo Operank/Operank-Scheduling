@@ -16,6 +16,9 @@ from operank_scheduling.algo.patient_assignment import sort_patients_by_priority
 
 
 assets_dir = find_project_root() / "assets"
+os.environ["MATPLOTLIB"] = "false"
+ui.run(title="Operank", favicon=str(assets_dir / "operank_favicon.jpg"))
+
 patient_list, surgery_list, timeslot_list = load_patients_from_json(
     assets_dir / "example_patient_data.json"
 )
@@ -35,6 +38,3 @@ app_state = AppState(patient_list, operating_rooms, surgeons, surgery_list)
 OperankHeader()
 StateManager(app_state)
 ui.footer()
-
-os.environ["MATPLOTLIB"] = "false"
-ui.run(title="Operank", favicon=str(assets_dir / "operank_favicon.jpg"))
