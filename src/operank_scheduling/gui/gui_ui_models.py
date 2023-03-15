@@ -66,21 +66,24 @@ class PatientSchedulingScreen(StateManager):
 
         with ui.card().classes("m-auto").style("max-width: 1200px; min-width: 1000px"):
             with ui.card().classes("m-auto w-full"):
-                FormattedTextRow(
-                    title="Patient:", text=patient.name, icon="personal_injury"
-                )
-                FormattedTextRow(title="ID:", text=patient.patient_id, icon="badge")
-                FormattedTextRow(
-                    title="Procedure:",
-                    text=patient.surgery_name,
-                    icon="health_and_safety",
-                )
-                FormattedTextRow(
-                    title="Priority:", text=patient.priority, icon="low_priority"
-                )
-                FormattedTextRow(
-                    title="Phone Number:", text=patient.phone_number, icon="call"
-                )
+                with ui.row().classes("w-full m-auto justify-between"):
+                    with ui.column().classes("m-auto"):
+                        FormattedTextRow(
+                            title="Patient:", text=patient.name, icon="personal_injury"
+                        )
+                        FormattedTextRow(title="ID:", text=patient.patient_id, icon="badge")
+                        FormattedTextRow(
+                            title="Procedure:",
+                            text=patient.surgery_name,
+                            icon="health_and_safety",
+                        )
+                    with ui.column().classes("m-auto"):
+                        FormattedTextRow(
+                            title="Priority:", text=patient.priority, icon="low_priority"
+                        )
+                        FormattedTextRow(
+                            title="Phone Number:", text=patient.phone_number, icon="call"
+                        )
             DateSelectionOptionsRow(
                 patient, available_slots, app_state, refresh_function
             )
