@@ -35,6 +35,7 @@ def parse_single_json_block(patient_data: dict) -> Tuple[Patient, Surgery, Times
     surgery_name = patient_data["surgery_name"].upper()
     referrer = patient_data["referrer"].upper()
     estimated_duration_m = patient_data["estimated_duration_m"]
+    phone_number = patient_data["phone_number"]
     priority = patient_data["priority"]
 
     patient = Patient(
@@ -44,6 +45,7 @@ def parse_single_json_block(patient_data: dict) -> Tuple[Patient, Surgery, Times
         referrer=referrer,
         estimated_duration_m=estimated_duration_m,
         priority=priority,
+        phone_number=phone_number,
         uuid=auto_id,
     )
 

@@ -83,6 +83,7 @@ class Patient:
         referrer: str,
         estimated_duration_m: int,
         priority: int,
+        phone_number: str,
         uuid: int
     ) -> None:
         self.name = name
@@ -91,6 +92,7 @@ class Patient:
         self.referrer = referrer
         self.duration_m = estimated_duration_m
         self.priority = priority
+        self.phone_number = phone_number
         self.uuid = uuid
         self.is_scheduled = False
 
