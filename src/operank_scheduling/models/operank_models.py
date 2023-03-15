@@ -114,6 +114,7 @@ class Surgery:
         self.requirements = requirements
         self.suitable_teams = list()
         self.suitable_wards = list()
+        self.patient = patient
         self.uuid = uuid
 
         self.assign_team_or_ward()

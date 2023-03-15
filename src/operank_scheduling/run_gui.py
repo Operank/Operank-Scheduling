@@ -39,4 +39,4 @@ StateManager(app_state)
 ui.footer()
 
 # Set reload to `False` in production / demo
-ui.run(title="Operank", favicon=str(assets_dir / "operank_favicon.jpg"), reload=True)
+ui.run(title="Operank", favicon=str(assets_dir / "operank_favicon.jpg"), reload=False)

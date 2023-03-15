@@ -53,7 +53,7 @@ def parse_single_json_block(patient_data: dict) -> Tuple[Patient, Surgery, Times
         name=surgery_name,
         duration_in_minutes=estimated_duration_m,
         uuid=auto_id,
-        patient=Patient,
+        patient=patient,
     )
 
     timeslot = Timeslot(duration=estimated_duration_m)
