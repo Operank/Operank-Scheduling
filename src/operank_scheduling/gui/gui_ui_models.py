@@ -63,8 +63,8 @@ class PatientSchedulingScreen(StateManager):
         patient = app_state.patients[patient_index]
         available_slots = fetch_valid_timeslots(patient, app_state)
 
-        with ui.card().classes("m-auto"):
-            with ui.card().classes("m-auto"):
+        with ui.card().classes("m-auto").style("max-width: 1200px; min-width: 1000px"):
+            with ui.card().classes("m-auto w-full"):
                 FormattedTextRow(
                     title="Patient:", text=patient.name, icon="personal_injury"
                 )
@@ -90,7 +90,7 @@ class DateSelectionOptionsRow:
         app_state: AppState,
         update_callback: Callable,
     ) -> None:
-        with ui.row():
+        with ui.row().classes("m-auto"):
             for slot in list_of_slots:
                 DateSelectionCard(patient, slot, app_state, update_callback)
 
@@ -206,7 +206,7 @@ class PatientSchedulingUI:
                     ),
                     show_value=False,
                     size="30px",
-                )
+                ).classes(add="rounded")
 
     def display_patient_scheduling_ui(self):
         self.app_state.canvas.clear()
