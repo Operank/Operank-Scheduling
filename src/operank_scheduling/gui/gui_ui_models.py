@@ -10,6 +10,7 @@ from operank_scheduling.models.operank_models import (
     schedule_patient_to_timeslot,
 )
 from operank_scheduling.algo.patient_assignment import suggest_feasible_dates
+from .theme import AppTheme
 import datetime
 from enum import Enum, auto
 
@@ -76,6 +77,9 @@ class PatientSchedulingScreen(StateManager):
                 )
                 FormattedTextRow(
                     title="Priority:", text=patient.priority, icon="low_priority"
+                )
+                FormattedTextRow(
+                    title="Phone Number:", text=patient.phone_number, icon="call"
                 )
             DateSelectionOptionsRow(
                 patient, available_slots, app_state, refresh_function
@@ -152,9 +156,9 @@ class FormattedTextRow:
     def __init__(self, title: str = "", text: str = "", icon: str = "") -> None:
         with ui.row().classes("items-center"):
             if icon != "":
-                ui.icon(icon)
-            ui.label(title).classes("text-weight-bold")
-            ui.label(text).classes("text-weight-regular")
+                ui.icon(icon).style(AppTheme.big_text)
+            ui.label(title).classes("text-weight-bold").style(AppTheme.big_text)
+            ui.label(text).classes("text-weight-regular").style(AppTheme.medium_text)
 
 
 class ArrowNavigationControls:

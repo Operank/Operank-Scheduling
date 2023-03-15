@@ -6,6 +6,7 @@
             "surgery_name" : "Gastroscopy",
             "referrer" : "Prof. Oak",
             "estimated_duration_m" : 45,
+            "phone_number" : "056-1441445",
             "priority" : 3
         },
 
@@ -15,6 +16,7 @@
             "surgery_name" : "Ileostomy",
             "referrer" : "Dr. Ash",
             "estimated_duration_m" : 25,
+            "phone_number" : "056-2594495",
             "priority" : 1
         },
 
@@ -24,6 +26,7 @@
             "surgery_name" : "Laparoscopic mini gastric bypass",
             "referrer" : "Dr. May",
             "estimated_duration_m" : 165,
+            "phone_number" : "056-2092114",
             "priority" : 9
         },
 
@@ -33,6 +36,7 @@
             "surgery_name" : "Pancreas transplant",
             "referrer" : "Prof. Oak",
             "estimated_duration_m" : 360,
+            "phone_number" : "056-1399405",
             "priority" : 5
         },
 
@@ -42,6 +46,7 @@
             "surgery_name" : "Thoracotomy",
             "referrer" : "Dr. Ash",
             "estimated_duration_m" : 40,
+            "phone_number" : "056-3411009",
             "priority" : 4
         },
 
@@ -51,6 +56,7 @@
             "surgery_name" : "Whipple procedure",
             "referrer" : "Dr. May",
             "estimated_duration_m" : 85,
+            "phone_number" : "056-4955813",
             "priority" : 1
         },
 
@@ -60,6 +66,7 @@
             "surgery_name" : "Laparotomy",
             "referrer" : "Prof. Oak",
             "estimated_duration_m" : 45,
+            "phone_number" : "056-1788995",
             "priority" : 2
         },
 
@@ -69,6 +76,7 @@
             "surgery_name" : "Laparoscopic adrenalectomy",
             "referrer" : "Dr. Ash",
             "estimated_duration_m" : 125,
+            "phone_number" : "056-7114827",
             "priority" : 7
         },
 
@@ -78,6 +86,7 @@
             "surgery_name" : "Laparotomy",
             "referrer" : "Dr. May",
             "estimated_duration_m" : 110,
+            "phone_number" : "056-6514223",
             "priority" : 8
         },
 
@@ -87,6 +96,7 @@
             "surgery_name" : "Kidney transplant",
             "referrer" : "Prof. Oak",
             "estimated_duration_m" : 240,
+            "phone_number" : "056-6543211",
             "priority" : 8
         },
 
@@ -96,6 +106,7 @@
             "surgery_name" : "Splenectomy",
             "referrer" : "Dr. Ash",
             "estimated_duration_m" : 45,
+            "phone_number" : "056-1445000",
             "priority" : 6
         },
 
@@ -105,6 +116,7 @@
             "surgery_name" : "Temporal artery biopsy",
             "referrer" : "Dr. May",
             "estimated_duration_m" : 165,
+            "phone_number" : "056-9442765",
             "priority" : 7
         }
     ]
