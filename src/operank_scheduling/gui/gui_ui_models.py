@@ -239,11 +239,11 @@ class OperatingRoomScheduleScreen:
         app_state.canvas.clear()
         for room in self.app_state.rooms:
             with ui.card():
-                ui.label(f"Room: {room.id}")
+                FormattedTextRow(title="Room:", text=f" {room.id}", icon="location_on")
                 for day in room.schedule:
                     with ui.card():
                         ui.label(f"Day: {day}")
                         for surgery in room.schedule[day]:
                             with ui.card():
-                                ui.label(f"{surgery.name}")
+                                ui.label(f"{surgery.name}, {surgery.patient.name}")
                                 ui.label(f"{surgery.duration} minutes")
