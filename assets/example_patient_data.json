@@ -35,7 +35,7 @@
             "patient_id": "000005000",
             "surgery_name" : "Pancreas transplant",
             "referrer" : "Prof. Oak",
-            "estimated_duration_m" : 360,
+            "estimated_duration_m" : 220,
             "phone_number" : "056-1399405",
             "priority" : 5
         },
@@ -95,7 +95,7 @@
             "patient_id": "020000100",
             "surgery_name" : "Kidney transplant",
             "referrer" : "Prof. Oak",
-            "estimated_duration_m" : 240,
+            "estimated_duration_m" : 200,
             "phone_number" : "056-6543211",
             "priority" : 8
         },
