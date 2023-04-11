@@ -14,6 +14,9 @@ from ..models.operank_models import (
 )
 
 
+from ..models.parse_hopital_data import load_surgeon_schedules
+
+
 def sort_patients_by_priority(patient_list: List[Patient]) -> List[Patient]:
     return sorted(patient_list, key=lambda p: p.priority)
 
@@ -71,19 +74,47 @@ def find_suitable_timeslots(
 
     suitable_timeslots = list()
     for room in suitable_rooms:
+        # Go over each room
         for day in room.schedule:
+            # Look at each day
             for event in room.schedule[day]:
+                # Check if the day has empty timeslots that we can schedule in
                 if isinstance(event, Timeslot):
+                    # For an empty timeslot:
+                    #   1. Check that the timeslot is long enough for the procedure
                     if procedure.can_fit_in(event):
-                        suitable_timeslots.append((room, day, event))
+                        #   2. Check that one of the suitable surgeons is free to operate
+                        earliest_surgeon_timeslots = list()
+                        for surgeon in suitable_surgeons:
+                            if surgeon.is_available_at(day):
+                                earliest_timeslot = surgeon.get_earliest_open_timeslot(
+                                        day, event.duration
+                                    )
+                                if earliest_timeslot is not None:
+                                    # Surgeon has an empty spot for the procedure
+                                    earliest_surgeon_timeslots.append(earliest_timeslot)
+                        if len(earliest_surgeon_timeslots) > 0:
+                            earliest_surgeon_timeslots.sort(key=lambda x: x[1])
+                            selected_surgeon, best_slot = earliest_surgeon_timeslots[0]
+                            suitable_timeslots.append(
+                                (room, best_slot, event, selected_surgeon)
+                            )
 
-    minimal_timeslot = min(suitable_timeslots, key=lambda x: x[2].duration)
-    suitable_minimal_timeslots = [
-        timeslot
-        for timeslot in suitable_timeslots
-        if timeslot[2].duration == minimal_timeslot[2].duration
-    ]
-    return suitable_minimal_timeslots
+    # Check if we can get 3 options for minimal timeslots
+    if len(suitable_timeslots) == 0:
+        logger.warning(f"Failed to schedule surgery {procedure}")
+    else:
+        minimal_timeslot = min(suitable_timeslots, key=lambda x: x[2].duration)
+        suitable_minimal_timeslots = [
+            timeslot
+            for timeslot in suitable_timeslots
+            if timeslot[2].duration == minimal_timeslot[2].duration
+        ]
+
+        if len(suitable_minimal_timeslots) > 2:
+            return suitable_minimal_timeslots[:3]
+        else:
+            suitable_timeslots[:3]
 
 
 def suggest_feasible_dates(
@@ -95,7 +126,9 @@ def suggest_feasible_dates(
     procedure = get_surgery_by_patient(patient, surgeries)
     suitable_rooms = find_suitable_operating_rooms(procedure, rooms)
     suitable_surgeons = find_suitable_surgeons(procedure, surgeons)
-    suitable_timeslots = find_suitable_timeslots(procedure, suitable_rooms, suitable_surgeons)
+    suitable_timeslots = find_suitable_timeslots(
+        procedure, suitable_rooms, suitable_surgeons
+    )
     return suitable_timeslots
 
 
@@ -110,6 +143,8 @@ def schedule_patients(
         4. Display these dates on the GUI (for now, just output)
     """
     surgeons = get_all_surgeons()
+    load_surgeon_schedules(surgeons)
+
     sorted_patients = sort_patients_by_priority(patients)
     for patient in sorted_patients:
         logger.debug(f"Now scheduling {patient.name}")

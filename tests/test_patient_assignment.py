@@ -231,4 +231,5 @@ def test_suggest_feasible_dates(schedule_patients):
         available_dates = suggest_feasible_dates(
             patient, surgery_list, operating_rooms, surgeon_list
         )
+        assert available_dates is not None
         assert len(available_dates) > 0
