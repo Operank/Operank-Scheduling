@@ -140,6 +140,7 @@ class Surgeon:
         self.id = surgeon_id
         self.ward = ward
         self.team = team.upper()
+        self.availability: Dict[datetime.datetime, List] = dict()
         self.occupied_times = list()
 
 
