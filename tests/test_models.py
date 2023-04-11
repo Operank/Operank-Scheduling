@@ -34,6 +34,7 @@ def test_parse_patient_data():
             "surgery_name": "Kidney transplant",
             "referrer": "Dr. Guy",
             "estimated_duration_m": 165,
+            "phone_number": "050-2222222",
             "priority": 7,
         },
         {
@@ -42,6 +43,7 @@ def test_parse_patient_data():
             "surgery_name": "Loop colostomy",
             "referrer": "Dr. Dude",
             "estimated_duration_m": 55,
+            "phone_number": "050-2222222",
             "priority": 5,
         },
     ]
