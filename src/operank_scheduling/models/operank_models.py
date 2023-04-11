@@ -1,5 +1,5 @@
 import datetime
-from typing import List, Dict, Union
+from typing import List, Dict, Union, Tuple
 
 from .parse_hopital_data import load_surgeon_data, map_surgery_to_team
 from operank_scheduling.models.enums import surgeon_teams
@@ -140,8 +140,30 @@ class Surgeon:
         self.id = surgeon_id
         self.ward = ward
         self.team = team.upper()
-        self.availability: Dict[datetime.datetime, List] = dict()
-        self.occupied_times = list()
+        self.availability: Dict[datetime.date, List[List]] = dict()
+        self.occupied_times: Dict[datetime.date, List[Tuple[Surgery, datetime.datetime]]] = dict()
+
+    def __repr__(self) -> str:
+        return f"{self.name}"
+
+    def is_available_at(self, date: datetime.date):
+        return self.availability[date]
+
+    def get_earliest_open_timeslot(self, date: datetime.date, duration_minutes: int) -> Union[datetime.datetime, None]:
+        for availability_slot in self.availability[date]:
+            window_start_time = datetime.datetime.combine(date, availability_slot[0])
+            window_end_time = datetime.datetime.combine(date, availability_slot[1])
+            if window_start_time + datetime.timedelta(minutes=duration_minutes) <= window_end_time:
+                # This is a good slot, return it but also reduce the slot:
+                new_slot_start_time = window_start_time + datetime.timedelta(minutes=duration_minutes)
+                availability_slot[0] = new_slot_start_time.time()
+                return self, window_start_time
+        # Otherwise, this surgeon can not take this operation, so we return None
+        return None
+
+    def add_surgery(self, surgery: Surgery, surgery_time: datetime.datetime) -> None:
+        date = surgery_time.date()
+        self.occupied_times[date].append((surgery, surgery_time))
 
 
 def get_all_surgeons() -> List[Surgeon]:

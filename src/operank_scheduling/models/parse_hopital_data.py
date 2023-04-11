@@ -84,7 +84,7 @@ def find_daily_work_hours(schedule: pd.DataFrame, index_to_time_LUT: dict, colum
         if current == 0 and prev == 1:
             stop = index_to_time_LUT[index + 1]
         if (start is not None) and (stop is not None):
-            today_work_hours.append((start, stop))
+            today_work_hours.append([start, stop])
             start = None
             stop = None
         prev = current
@@ -104,9 +104,10 @@ def load_surgeon_schedules(surgeons: List) -> None:
     for day in list(days_to_rows.keys())[:-1]:
         rows = days_to_rows[day]
         day_schedule = schedule_df.iloc[rows[0] : rows[1], :]
+        day_date = day.date()
 
         for column_index in range(3, 3 + amt_surgeons):
             surgeon_idx = column_index - 3  # Column indices are offset from surgeon index by 3
             surgeon_daily_schedule = find_daily_work_hours(day_schedule, index_to_time, column_index)
-            surgeons[surgeon_idx].availability[day] = surgeon_daily_schedule
+            surgeons[surgeon_idx].availability[day_date] = surgeon_daily_schedule
     pass

@@ -17,6 +17,8 @@ from operank_scheduling.models.parse_data_to_models import (
     load_patients_from_json,
 )
 
+from operank_scheduling.models.parse_hopital_data import load_surgeon_schedules
+
 from operank_scheduling.algo.surgery_distribution_models import (
     distribute_timeslots_to_operating_rooms,
     distribute_timeslots_to_days,
@@ -208,6 +210,7 @@ def test_find_suitable_timeslots(schedule_patients):
         surgeon_list,
     ) = schedule_patients
 
+    load_surgeon_schedules(surgeon_list)
     for patient in patient_list:
         procedure = get_surgery_by_patient(patient, surgery_list)
         suitable_rooms = find_suitable_operating_rooms(procedure, operating_rooms)
@@ -223,6 +226,7 @@ def test_suggest_feasible_dates(schedule_patients):
         operating_rooms,
         surgeon_list,
     ) = schedule_patients
+    load_surgeon_schedules(surgeon_list)
     for patient in patient_list:
         available_dates = suggest_feasible_dates(
             patient, surgery_list, operating_rooms, surgeon_list
