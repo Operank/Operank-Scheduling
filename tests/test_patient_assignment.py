@@ -42,6 +42,7 @@ def test_patient_sorting():
         surgery_name="a",
         referrer="a",
         estimated_duration_m=3,
+        phone_number="050-1111111",
         uuid=1,
     )
     p2 = Patient(
@@ -51,6 +52,7 @@ def test_patient_sorting():
         surgery_name="a",
         referrer="a",
         estimated_duration_m=3,
+        phone_number="050-1111112",
         uuid=2,
     )
     p3 = Patient(
@@ -61,6 +63,7 @@ def test_patient_sorting():
         referrer="a",
         estimated_duration_m=3,
         uuid=3,
+        phone_number="050-1111122",
     )
     p4 = Patient(
         priority=4,
@@ -69,6 +72,7 @@ def test_patient_sorting():
         surgery_name="a",
         referrer="a",
         estimated_duration_m=3,
+        phone_number="050-1111142",
         uuid=4,
     )
 
@@ -88,6 +92,7 @@ def create_dummy_patient_and_surgeries():
         surgery_name="a",
         referrer="a",
         estimated_duration_m=3,
+        phone_number="050-1234567",
         uuid=1,
     )
     s1 = Surgery(name="a", duration_in_minutes=65, uuid=1, patient=patient)
@@ -109,6 +114,7 @@ def test_surgery_to_patient_link_exception(create_dummy_patient_and_surgeries):
         surgery_name="a",
         referrer="a",
         estimated_duration_m=3,
+        phone_number="050-3333333",
         uuid=7,
     )
     _, surgeries = create_dummy_patient_and_surgeries
