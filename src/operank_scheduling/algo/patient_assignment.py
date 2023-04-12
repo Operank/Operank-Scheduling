@@ -88,7 +88,7 @@ def find_suitable_timeslots(
                         for surgeon in suitable_surgeons:
                             if surgeon.is_available_at(day):
                                 earliest_timeslot = surgeon.get_earliest_open_timeslot(
-                                        day, event.duration
+                                        day, procedure.duration
                                     )
                                 if earliest_timeslot is not None:
                                     # Surgeon has an empty spot for the procedure
@@ -114,7 +114,7 @@ def find_suitable_timeslots(
         if len(suitable_minimal_timeslots) > 2:
             return suitable_minimal_timeslots[:3]
         else:
-            suitable_timeslots[:3]
+            return suitable_timeslots[:3]
 
 
 def suggest_feasible_dates(

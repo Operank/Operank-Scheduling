@@ -154,9 +154,12 @@ class Surgeon:
             window_start_time = datetime.datetime.combine(date, availability_slot[0])
             window_end_time = datetime.datetime.combine(date, availability_slot[1])
             if window_start_time + datetime.timedelta(minutes=duration_minutes) <= window_end_time:
+                # TODO: Remove this slot when assigning surgery to surgeon, and
+                # call the function to get timeslots again.
+                
                 # This is a good slot, return it but also reduce the slot:
-                new_slot_start_time = window_start_time + datetime.timedelta(minutes=duration_minutes)
-                availability_slot[0] = new_slot_start_time.time()
+                # new_slot_start_time = window_start_time + datetime.timedelta(minutes=duration_minutes)
+                # availability_slot[0] = new_slot_start_time.time()
                 return self, window_start_time
         # Otherwise, this surgeon can not take this operation, so we return None
         return None

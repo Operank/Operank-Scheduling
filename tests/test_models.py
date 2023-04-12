@@ -1,3 +1,4 @@
+import datetime
 from operank_scheduling.models.operank_models import (
     Surgery,
     Timeslot,
@@ -8,6 +9,8 @@ from operank_scheduling.models.parse_data_to_models import (
     load_patients_from_json,
     load_operating_rooms_from_json,
 )
+
+from operank_scheduling.models.parse_hopital_data import load_surgeon_schedules
 
 
 def test_timeslot():
@@ -60,6 +63,16 @@ def test_parse_patient_data():
 
 def test_get_all_surgeons():
     get_all_surgeons()
+
+
+def test_get_earliest_timeslot_for_surgeon():
+    surgeons = get_all_surgeons()
+    load_surgeon_schedules(surgeons)
+    surgeon = surgeons[0]
+
+    date = datetime.datetime.now().date()
+    timeslot = surgeon.get_earliest_open_timeslot(date, 120)
+    pass
 
 
 def test_load_patients_from_json():
