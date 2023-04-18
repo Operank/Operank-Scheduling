@@ -13,6 +13,7 @@ from ..models.operank_models import (
     get_all_surgeons,
 )
 
+from random import choice
 
 from ..models.parse_hopital_data import load_surgeon_schedules
 
@@ -62,6 +63,13 @@ def find_suitable_surgeons(
 
         elif surgeon.team in procedure.suitable_teams:
             suitable_surgeons.append(surgeon)
+
+        else:
+            logger.warning(
+                f"Allocated random surgeon for {procedure.name}, no suitable surgeons found"
+            )
+            return [choice(surgeons)]
+
     return suitable_surgeons
 
 
