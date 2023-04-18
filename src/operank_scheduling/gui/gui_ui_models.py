@@ -41,8 +41,11 @@ class AppState:
 def fetch_valid_timeslots(patient: Patient, app_state: AppState):
     surgery_list = app_state.surgeries
     operating_rooms = app_state.rooms
-    dates = suggest_feasible_dates(patient, surgery_list, operating_rooms, [])
-    return [(date[0].id, date[1], date[2]) for date in dates]
+    surgeons = app_state.surgeons
+    timeslots_data = suggest_feasible_dates(
+        patient, surgery_list, operating_rooms, surgeons
+    )
+    return [(slot[0].id, slot[1], slot[2], slot[3]) for slot in timeslots_data]
 
 
 class StateManager:
@@ -71,7 +74,9 @@ class PatientSchedulingScreen(StateManager):
                         FormattedTextRow(
                             title="Patient:", text=patient.name, icon="personal_injury"
                         )
-                        FormattedTextRow(title="ID:", text=patient.patient_id, icon="badge")
+                        FormattedTextRow(
+                            title="ID:", text=patient.patient_id, icon="badge"
+                        )
                         FormattedTextRow(
                             title="Procedure:",
                             text=patient.surgery_name,
@@ -79,10 +84,14 @@ class PatientSchedulingScreen(StateManager):
                         )
                     with ui.column().classes("m-auto"):
                         FormattedTextRow(
-                            title="Priority:", text=patient.priority, icon="low_priority"
+                            title="Priority:",
+                            text=patient.priority,
+                            icon="low_priority",
                         )
                         FormattedTextRow(
-                            title="Phone Number:", text=patient.phone_number, icon="call"
+                            title="Phone Number:",
+                            text=patient.phone_number,
+                            icon="call",
                         )
             DateSelectionOptionsRow(
                 patient, available_slots, app_state, refresh_function
@@ -93,7 +102,7 @@ class DateSelectionOptionsRow:
     def __init__(
         self,
         patient: Patient,
-        list_of_slots: List[Tuple[str, datetime.datetime, Timeslot]],
+        list_of_slots: List[Tuple[str, datetime.datetime, Timeslot, Surgeon]],
         app_state: AppState,
         update_callback: Callable,
     ) -> None:
@@ -117,12 +126,14 @@ class DateSelectionCard(ui.card):
         self.patient = patient
         self.slot_date = slot[1]
         self.timeslot = slot[2]
+        self.surgeon_name = slot[3]
         self.app_state = app_state
         with self:
             col = ui.column()
             with col.classes("items-center"):
                 FormattedTextRow(text=self.operating_room_name, icon="location_on")
                 FormattedTextRow(text=self.displayed_date, icon="event")
+                FormattedTextRow(text=self.surgeon_name, icon="medication")
 
         self.on("click", self.select_slot)
         self.on("mouseover", self.hover_highlight)
@@ -141,6 +152,8 @@ class DateSelectionCard(ui.card):
             self.timeslot,
             operating_room,
             self.app_state.surgeries,
+            self.surgeon_name,
+            self.app_state.surgeons,
         )
         ui.notify(f"Scheduled {self.patient.name} for {self.slot_date}", closeBtn=True)
         self.app_state.patients.remove(self.patient)
@@ -246,4 +259,6 @@ class OperatingRoomScheduleScreen:
                         for surgery in room.schedule[day]:
                             with ui.card():
                                 ui.label(f"{surgery.name}, {surgery.patient.name}")
-                                ui.label(f"{surgery.duration} minutes")
+                                ui.label(
+                                    f"{surgery.duration} minutes, {surgery.surgeon}"
+                                )

@@ -70,8 +70,6 @@ def find_suitable_timeslots(
     suitable_rooms: List[OperatingRoom],
     suitable_surgeons: List[Surgeon],
 ):
-    # TODO: Make use of the surgeon schedule
-
     suitable_timeslots = list()
     for room in suitable_rooms:
         # Go over each room
@@ -88,17 +86,32 @@ def find_suitable_timeslots(
                         for surgeon in suitable_surgeons:
                             if surgeon.is_available_at(day):
                                 earliest_timeslot = surgeon.get_earliest_open_timeslot(
-                                        day, procedure.duration
-                                    )
+                                    day, procedure.duration
+                                )
                                 if earliest_timeslot is not None:
                                     # Surgeon has an empty spot for the procedure
                                     earliest_surgeon_timeslots.append(earliest_timeslot)
+                            continue
                         if len(earliest_surgeon_timeslots) > 0:
                             earliest_surgeon_timeslots.sort(key=lambda x: x[1])
-                            selected_surgeon, best_slot = earliest_surgeon_timeslots[0]
-                            suitable_timeslots.append(
-                                (room, best_slot, event, selected_surgeon)
-                            )
+                            # Add three good options to the pool for this date:
+                            if len(earliest_surgeon_timeslots) >= 3:
+                                for i in range(3):
+                                    (
+                                        selected_surgeon,
+                                        best_slot,
+                                    ) = earliest_surgeon_timeslots[i]
+                                    suitable_timeslots.append(
+                                        (room, best_slot, event, selected_surgeon.name)
+                                    )
+                            else:
+                                (
+                                    selected_surgeon,
+                                    best_slot,
+                                ) = earliest_surgeon_timeslots[0]
+                                suitable_timeslots.append(
+                                    (room, best_slot, event, selected_surgeon.name)
+                                )
 
     # Check if we can get 3 options for minimal timeslots
     if len(suitable_timeslots) == 0:

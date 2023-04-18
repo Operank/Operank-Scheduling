@@ -84,7 +84,7 @@ class Patient:
         estimated_duration_m: int,
         priority: int,
         phone_number: str,
-        uuid: int
+        uuid: int,
     ) -> None:
         self.name = name
         self.patient_id = patient_id
@@ -116,6 +116,7 @@ class Surgery:
         self.suitable_wards = list()
         self.patient = patient
         self.uuid = uuid
+        self.surgeon = None
 
         self.assign_team_or_ward()
 
@@ -141,7 +142,9 @@ class Surgeon:
         self.ward = ward
         self.team = team.upper()
         self.availability: Dict[datetime.date, List[List]] = dict()
-        self.occupied_times: Dict[datetime.date, List[Tuple[Surgery, datetime.datetime]]] = dict()
+        self.occupied_times: Dict[
+            datetime.date, List[Tuple[Surgery, datetime.datetime]]
+        ] = dict()
 
     def __repr__(self) -> str:
         return f"{self.name}"
@@ -149,14 +152,18 @@ class Surgeon:
     def is_available_at(self, date: datetime.date):
         return self.availability[date]
 
-    def get_earliest_open_timeslot(self, date: datetime.date, duration_minutes: int) -> Union[datetime.datetime, None]:
+    def get_earliest_open_timeslot(
+        self, date: datetime.date, duration_minutes: int
+    ) -> Union[datetime.datetime, None]:
         for availability_slot in self.availability[date]:
             window_start_time = datetime.datetime.combine(date, availability_slot[0])
             window_end_time = datetime.datetime.combine(date, availability_slot[1])
-            if window_start_time + datetime.timedelta(minutes=duration_minutes) <= window_end_time:
+            if (
+                window_start_time + datetime.timedelta(minutes=duration_minutes)
+                <= window_end_time
+            ):
                 # TODO: Remove this slot when assigning surgery to surgeon, and
                 # call the function to get timeslots again.
-                
                 # This is a good slot, return it but also reduce the slot:
                 # new_slot_start_time = window_start_time + datetime.timedelta(minutes=duration_minutes)
                 # availability_slot[0] = new_slot_start_time.time()
@@ -166,6 +173,8 @@ class Surgeon:
 
     def add_surgery(self, surgery: Surgery, surgery_time: datetime.datetime) -> None:
         date = surgery_time.date()
+        if date not in self.occupied_times.keys():
+            self.occupied_times[date] = list()
         self.occupied_times[date].append((surgery, surgery_time))
 
 
@@ -202,17 +211,29 @@ def get_surgery_by_name(name: str, surgeries: List[Surgery]):
             return surgery
 
 
+def get_surgeon_by_name(name: str, surgeons: List[Surgeon]):
+    for surgeon in surgeons:
+        if name == surgeon.name:
+            return surgeon
+
+
 def schedule_patient_to_timeslot(
     patient: Patient,
-    date: datetime.datetime,
+    date_and_time: datetime.datetime,
     timeslot: datetime.datetime,
     operating_room: OperatingRoom,
     surgeries: List[Surgery],
-    surgeon: Surgeon = None,
+    surgeon_name: Surgeon,
+    surgeons_list: List[Surgeon],
 ):
     try:
         surgery = get_surgery_by_name(patient.surgery_name, surgeries)
-        replace_timeslot_by_surgery(operating_room.schedule[date], timeslot, surgery)
+        surgeon = get_surgeon_by_name(surgeon_name, surgeons_list)
+        surgery.surgeon = surgeon_name
+        replace_timeslot_by_surgery(
+            operating_room.schedule[date_and_time.date()], timeslot, surgery
+        )
+        surgeon.add_surgery(surgery, date_and_time)
         patient.mark_as_done()
     except ValueError:
         raise ValueError("Some mismatch found?")
