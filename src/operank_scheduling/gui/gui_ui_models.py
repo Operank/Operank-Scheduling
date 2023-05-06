@@ -263,14 +263,17 @@ class RoomSchedule:
         ]
         rows = []
         for day in room.schedule:
+            daily_rows = []
             for surgery in room.schedule[day]:
                 surgery_end_time = surgery.scheduled_time + datetime.timedelta(minutes=surgery.duration)
-                rows.append({'date' : f'{day}',
-                             'start' : f'{surgery.scheduled_time.time()}',
-                             'end' : f'{surgery_end_time.time()}',
-                             'surgeon' : f'{surgery.surgeon}',
-                             'patient' : f'{surgery.patient.name}',
-                             'procedure' : f'{surgery.name}'})
+                daily_rows.append({'date' : f'{day}',
+                                   'start' : f'{surgery.scheduled_time.time()}',
+                                   'end' : f'{surgery_end_time.time()}',
+                                   'surgeon' : f'{surgery.surgeon}',
+                                   'patient' : f'{surgery.patient.name}',
+                                   'procedure' : f'{surgery.name}'})
+            daily_rows.sort(key=lambda x: x['start'])
+            rows += daily_rows
         ui.table(columns=table_cols, rows=rows, row_key='name')
 
 
