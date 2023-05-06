@@ -99,6 +99,7 @@ def find_suitable_timeslots(
     suitable_surgeons: List[Surgeon],
 ):
     suitable_timeslots = list()
+    
     for room in suitable_rooms:
         # Go over each room
         for day in room.schedule:
@@ -131,7 +132,8 @@ def find_suitable_timeslots(
                                 suitable_timeslots.append(
                                     (room, best_slot, event, selected_surgeon.name)
                                 )
-                current_time += datetime.timedelta(minutes=event.duration)
+                placeholder_timeslot = Timeslot(event.duration)
+                current_time += datetime.timedelta(minutes=placeholder_timeslot.duration)
 
     # Check if we can get 3 options for minimal timeslots
     if len(suitable_timeslots) == 0:
