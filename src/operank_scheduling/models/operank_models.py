@@ -52,7 +52,8 @@ class OperatingRoom:
         )
 
         for day_idx, day in enumerate(working_days):
-            self.schedule[day] = self.timeslots_by_day[day_idx]
+            sorted_timeslots = sorted(self.timeslots_by_day[day_idx], key=lambda x: x.duration, reverse=True)
+            self.schedule[day] = sorted_timeslots
 
 
 class Timeslot:
@@ -161,6 +162,21 @@ class Surgeon:
         for availability_slot in self.availability[date]:
             window_start_time = datetime.datetime.combine(date, availability_slot[0])
             window_end_time = datetime.datetime.combine(date, availability_slot[1])
+            if (
+                window_start_time + datetime.timedelta(minutes=duration_minutes)
+                <= window_end_time
+            ):
+                return self, window_start_time
+        # Otherwise, this surgeon can not take this operation, so we return None
+        return None
+
+    def is_surgeon_available_at(
+        self, date_and_time: datetime.datetime, duration_minutes: int
+    ) -> Union[datetime.datetime, None]:
+        current_date = date_and_time.date()
+        for availability_slot in self.availability[current_date]:
+            window_start_time = date_and_time
+            window_end_time = datetime.datetime.combine(current_date, availability_slot[1])
             if (
                 window_start_time + datetime.timedelta(minutes=duration_minutes)
                 <= window_end_time

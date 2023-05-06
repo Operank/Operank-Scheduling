@@ -69,6 +69,7 @@ def find_suitable_surgeons(
             f"Allocated random surgeon for {procedure.name}, no suitable surgeons found"
         )
         return [choice(surgeons)]
+
     return suitable_surgeons
 
 
@@ -102,6 +103,7 @@ def find_suitable_timeslots(
         # Go over each room
         for day in room.schedule:
             # Look at each day
+            current_time = datetime.datetime.combine(day, datetime.time(hour=8, minute=0))
             for event in room.schedule[day]:
                 # Check if the day has empty timeslots that we can schedule in
                 if isinstance(event, Timeslot):
@@ -112,8 +114,8 @@ def find_suitable_timeslots(
                         earliest_surgeon_timeslots = list()
                         for surgeon in suitable_surgeons:
                             if surgeon.is_available_at(day):
-                                earliest_timeslot = surgeon.get_earliest_open_timeslot(
-                                    day, procedure.duration
+                                earliest_timeslot = surgeon.is_surgeon_available_at(
+                                    current_time, procedure.duration
                                 )
                                 if earliest_timeslot is not None:
                                     # Surgeon has an empty spot for the procedure
@@ -129,13 +131,15 @@ def find_suitable_timeslots(
                                 suitable_timeslots.append(
                                     (room, best_slot, event, selected_surgeon.name)
                                 )
+                current_time += datetime.timedelta(minutes=event.duration)
 
     # Check if we can get 3 options for minimal timeslots
     if len(suitable_timeslots) == 0:
         logger.warning(f"Failed to schedule surgery {procedure}")
+        return None
     else:
         # Remove "duplicates"
-        suitable_timeslots = remove_duplicate_suggestions(suitable_timeslots)
+        # suitable_timeslots = remove_duplicate_suggestions(suitable_timeslots)
         minimal_timeslot = min(suitable_timeslots, key=lambda x: x[2].duration)
         suitable_minimal_timeslots = [
             timeslot

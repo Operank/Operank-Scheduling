@@ -250,8 +250,8 @@ class RoomSchedule:
     def __init__(self, room: OperatingRoom):
         table_cols = [
             {"name": "date", "label": "Date", "field": "date", "align": "left"},
-            {"name": "time", "label": "Start Time", "field": "time", "align": "left"},
-            {"name": "duration", "label": "Duration", "field": "duration", "align": "left"},
+            {"name": "start", "label": "Start Time", "field": "start", "align": "left"},
+            {"name": "end", "label": "End Time", "field": "end", "align": "left"},
             {"name": "surgeon", "label": "Surgeon", "field": "surgeon", "align": "left"},
             {"name": "patient", "label": "Patient", "field": "patient", "align": "left"},
             {
@@ -264,9 +264,10 @@ class RoomSchedule:
         rows = []
         for day in room.schedule:
             for surgery in room.schedule[day]:
+                surgery_end_time = surgery.scheduled_time + datetime.timedelta(minutes=surgery.duration)
                 rows.append({'date' : f'{day}',
-                             'time' : f'{surgery.scheduled_time.time()}',
-                             'duration' : f'{surgery.duration}',
+                             'start' : f'{surgery.scheduled_time.time()}',
+                             'end' : f'{surgery_end_time.time()}',
                              'surgeon' : f'{surgery.surgeon}',
                              'patient' : f'{surgery.patient.name}',
                              'procedure' : f'{surgery.name}'})
