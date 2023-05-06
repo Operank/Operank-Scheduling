@@ -246,19 +246,49 @@ class PatientSchedulingUI:
         self.display_patient_scheduling_ui()
 
 
+class RoomSchedule:
+    def __init__(self, room: OperatingRoom):
+        table_cols = [
+            {"name": "date", "label": "Date", "field": "date", "align": "left"},
+            {"name": "time", "label": "Start Time", "field": "time", "align": "left"},
+            {"name": "duration", "label": "Duration", "field": "duration", "align": "left"},
+            {"name": "surgeon", "label": "Surgeon", "field": "surgeon", "align": "left"},
+            {"name": "patient", "label": "Patient", "field": "patient", "align": "left"},
+            {
+                "name": "procedure",
+                "label": "Surgery",
+                "field": "procedure",
+                "align": "left",
+            },
+        ]
+        rows = []
+        for day in room.schedule:
+            for surgery in room.schedule[day]:
+                rows.append({'date' : f'{day}',
+                             'time' : f'{surgery.scheduled_time.time()}',
+                             'duration' : f'{surgery.duration}',
+                             'surgeon' : f'{surgery.surgeon}',
+                             'patient' : f'{surgery.patient.name}',
+                             'procedure' : f'{surgery.name}'})
+        ui.table(columns=table_cols, rows=rows, row_key='name')
+
+
 class OperatingRoomScheduleScreen:
     def __init__(self, app_state: AppState, update_interface_cb: Callable) -> None:
         self.app_state = app_state
         app_state.canvas.clear()
         for room in self.app_state.rooms:
             with ui.card():
-                FormattedTextRow(title="Room:", text=f" {room.id}", icon="location_on")
-                for day in room.schedule:
-                    with ui.card():
-                        ui.label(f"Day: {day}")
-                        for surgery in room.schedule[day]:
-                            with ui.card():
-                                ui.label(f"{surgery.name}, {surgery.patient.name}")
-                                ui.label(
-                                    f"{surgery.duration} minutes, {surgery.surgeon}"
-                                )
+                ui.label(room.id)
+                RoomSchedule(room)
+            # with ui.card():
+            #     FormattedTextRow(title="Room:", text=f" {room.id}", icon="location_on")
+            #     for day in room.schedule:
+            #         with ui.card():
+            #             ui.label(f"Day: {day}")
+            #             for surgery in room.schedule[day]:
+            #                 with ui.card():
+            #                     ui.label(f"{surgery.name}, {surgery.patient.name}")
+            #                     ui.label(
+            #                         f"{surgery.duration} minutes, {surgery.surgeon}"
+            #                     )

@@ -134,6 +134,9 @@ class Surgery:
             else:
                 self.suitable_wards.append(int(value))
 
+    def set_time(self, date_and_time: datetime):
+        self.scheduled_time = date_and_time
+
 
 class Surgeon:
     def __init__(self, name: str, surgeon_id: int, ward: int, team: str) -> None:
@@ -239,6 +242,7 @@ def schedule_patient_to_timeslot(
         surgery = get_surgery_by_name(patient.surgery_name, surgeries)
         surgeon = get_surgeon_by_name(surgeon_name, surgeons_list)
         surgery.surgeon = surgeon_name
+        surgery.set_time(date_and_time)
         replace_timeslot_by_surgery(
             operating_room.schedule[date_and_time.date()], timeslot, surgery
         )
