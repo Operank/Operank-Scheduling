@@ -64,13 +64,32 @@ def find_suitable_surgeons(
         elif surgeon.team in procedure.suitable_teams:
             suitable_surgeons.append(surgeon)
 
-        else:
-            logger.warning(
-                f"Allocated random surgeon for {procedure.name}, no suitable surgeons found"
-            )
-            return [choice(surgeons)]
-
+    if len(suitable_surgeons) == 0:
+        logger.warning(
+            f"Allocated random surgeon for {procedure.name}, no suitable surgeons found"
+        )
+        return [choice(surgeons)]
     return suitable_surgeons
+
+
+def remove_duplicate_suggestions(
+    suggestions: List[Tuple[OperatingRoom, datetime.datetime, Timeslot, str]]
+):
+    # For each day, return just one option for a single surgeon
+    final_suggestions = []
+    seen_datetimes = []
+    for suggestion in suggestions:
+        operation_datetime = suggestion[1]
+        if operation_datetime not in seen_datetimes:
+            seen_datetimes.append(operation_datetime)
+            operations_at_this_date = [
+                x for x in suggestions if x[1].date() == operation_datetime.date()
+            ]
+            minimal_suggestion = min(
+                operations_at_this_date, key=lambda x: x[2].duration
+            )
+            final_suggestions.append(minimal_suggestion)
+    return final_suggestions
 
 
 def find_suitable_timeslots(
@@ -99,24 +118,14 @@ def find_suitable_timeslots(
                                 if earliest_timeslot is not None:
                                     # Surgeon has an empty spot for the procedure
                                     earliest_surgeon_timeslots.append(earliest_timeslot)
-                            continue
                         if len(earliest_surgeon_timeslots) > 0:
                             earliest_surgeon_timeslots.sort(key=lambda x: x[1])
                             # Add three good options to the pool for this date:
-                            if len(earliest_surgeon_timeslots) >= 3:
-                                for i in range(3):
-                                    (
-                                        selected_surgeon,
-                                        best_slot,
-                                    ) = earliest_surgeon_timeslots[i]
-                                    suitable_timeslots.append(
-                                        (room, best_slot, event, selected_surgeon.name)
-                                    )
-                            else:
+                            for i in range(len(earliest_surgeon_timeslots)):
                                 (
                                     selected_surgeon,
                                     best_slot,
-                                ) = earliest_surgeon_timeslots[0]
+                                ) = earliest_surgeon_timeslots[i]
                                 suitable_timeslots.append(
                                     (room, best_slot, event, selected_surgeon.name)
                                 )
@@ -125,6 +134,8 @@ def find_suitable_timeslots(
     if len(suitable_timeslots) == 0:
         logger.warning(f"Failed to schedule surgery {procedure}")
     else:
+        # Remove "duplicates"
+        suitable_timeslots = remove_duplicate_suggestions(suitable_timeslots)
         minimal_timeslot = min(suitable_timeslots, key=lambda x: x[2].duration)
         suitable_minimal_timeslots = [
             timeslot
