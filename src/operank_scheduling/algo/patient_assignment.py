@@ -99,41 +99,37 @@ def find_suitable_timeslots(
     suitable_surgeons: List[Surgeon],
 ):
     suitable_timeslots = list()
-    
+
+    # For each room,
+    #   For each day:
+    #       Check if a long-enough slot exists
+    #       Check if at this slot one of the surgeons is available
+
     for room in suitable_rooms:
-        # Go over each room
         for day in room.schedule:
-            # Look at each day
-            current_time = datetime.datetime.combine(day, datetime.time(hour=8, minute=0))
-            for event in room.schedule[day]:
-                # Check if the day has empty timeslots that we can schedule in
-                if isinstance(event, Timeslot):
-                    # For an empty timeslot:
-                    #   1. Check that the timeslot is long enough for the procedure
-                    if procedure.can_fit_in(event):
-                        #   2. Check that one of the suitable surgeons is free to operate
-                        earliest_surgeon_timeslots = list()
-                        for surgeon in suitable_surgeons:
-                            if surgeon.is_available_at(day):
-                                earliest_timeslot = surgeon.is_surgeon_available_at(
-                                    current_time, procedure.duration
-                                )
-                                if earliest_timeslot is not None:
-                                    # Surgeon has an empty spot for the procedure
-                                    earliest_surgeon_timeslots.append(earliest_timeslot)
-                        if len(earliest_surgeon_timeslots) > 0:
-                            earliest_surgeon_timeslots.sort(key=lambda x: x[1])
-                            # Add three good options to the pool for this date:
-                            for i in range(len(earliest_surgeon_timeslots)):
-                                (
-                                    selected_surgeon,
-                                    best_slot,
-                                ) = earliest_surgeon_timeslots[i]
-                                suitable_timeslots.append(
-                                    (room, best_slot, event, selected_surgeon.name)
-                                )
-                placeholder_timeslot = Timeslot(event.duration)
-                current_time += datetime.timedelta(minutes=placeholder_timeslot.duration)
+            available_timeslots = [ts for ts in room.schedule[day] if isinstance(ts, Timeslot)]
+            long_enough_timeslots = [ts for ts in available_timeslots if procedure.can_fit_in(ts)]
+            for timeslot in long_enough_timeslots:
+                earliest_surgeon_timeslots = list()
+                for surgeon in suitable_surgeons:
+                    if surgeon.is_available_at(day):
+                        earliest_timeslot = surgeon.is_surgeon_available_at(
+                            room.available_time[day], procedure.duration
+                        )
+                        if earliest_timeslot is not None:
+                            # Surgeon has an empty spot for the procedure
+                            earliest_surgeon_timeslots.append(earliest_timeslot)
+                if len(earliest_surgeon_timeslots) > 0:
+                    earliest_surgeon_timeslots.sort(key=lambda x: x[1])
+                    # Add three good options to the pool for this date:
+                    for i in range(len(earliest_surgeon_timeslots)):
+                        (
+                            selected_surgeon,
+                            best_slot,
+                        ) = earliest_surgeon_timeslots[i]
+                        suitable_timeslots.append(
+                            (room, best_slot, timeslot, selected_surgeon.name)
+                        )
 
     # Check if we can get 3 options for minimal timeslots
     if len(suitable_timeslots) == 0:
