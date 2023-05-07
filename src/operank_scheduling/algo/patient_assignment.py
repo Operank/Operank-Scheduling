@@ -107,8 +107,12 @@ def find_suitable_timeslots(
 
     for room in suitable_rooms:
         for day in room.schedule:
-            available_timeslots = [ts for ts in room.schedule[day] if isinstance(ts, Timeslot)]
-            long_enough_timeslots = [ts for ts in available_timeslots if procedure.can_fit_in(ts)]
+            available_timeslots = [
+                ts for ts in room.schedule[day] if isinstance(ts, Timeslot)
+            ]
+            long_enough_timeslots = [
+                ts for ts in available_timeslots if procedure.can_fit_in(ts)
+            ]
             for timeslot in long_enough_timeslots:
                 earliest_surgeon_timeslots = list()
                 for surgeon in suitable_surgeons:
