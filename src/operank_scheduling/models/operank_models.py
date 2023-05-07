@@ -14,6 +14,7 @@ class OperatingRoom:
         self.timeslots_to_schedule: List[Timeslot] = list()
         self.timeslots_by_day: List[List[Timeslot]] = list()
         self.schedule: Dict[datetime.date, List[Union[Timeslot, Surgery]]] = dict()
+        self.available_time: Dict[datetime.date, datetime.datetime] = dict()
         self.non_working_days = [4, 5]  # 4: Friday, 5: Saturday
 
     def __repr__(self) -> str:
@@ -52,8 +53,10 @@ class OperatingRoom:
         )
 
         for day_idx, day in enumerate(working_days):
+            # Add timeslots to the daily schedule, starting with longest (reverse order)
             sorted_timeslots = sorted(self.timeslots_by_day[day_idx], key=lambda x: x.duration, reverse=True)
             self.schedule[day] = sorted_timeslots
+            self.available_time[day] = datetime.datetime.combine(day, datetime.time(hour=8))
 
 
 class Timeslot:
@@ -261,8 +264,9 @@ def schedule_patient_to_timeslot(
         surgery.surgeon = surgeon_name
         surgery.set_time(date_and_time)
         replace_timeslot_by_surgery(
-            operating_room.schedule[date_and_time.date()], timeslot, surgery
+            operating_room.schedule[surgery_date], timeslot, surgery
         )
+        operating_room.available_time[surgery_date] += datetime.timedelta(minutes=surgery.duration)
         surgeon.add_surgery(surgery, date_and_time)
         patient.mark_as_done()
     except ValueError:
