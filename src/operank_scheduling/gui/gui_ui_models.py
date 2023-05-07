@@ -249,7 +249,7 @@ class PatientSchedulingUI:
 class RoomSchedule:
     def __init__(self, room: OperatingRoom):
         table_cols = [
-            {"name": "date", "label": "Date", "field": "date", "align": "left"},
+            {"name": "date", "label": "Date", "field": "date", "align": "left", 'sortable' : True},
             {"name": "start", "label": "Start Time", "field": "start", "align": "left"},
             {"name": "end", "label": "End Time", "field": "end", "align": "left"},
             {"name": "surgeon", "label": "Surgeon", "field": "surgeon", "align": "left"},
@@ -274,25 +274,14 @@ class RoomSchedule:
                                    'procedure' : f'{surgery.name}'})
             daily_rows.sort(key=lambda x: x['start'])
             rows += daily_rows
-        ui.table(columns=table_cols, rows=rows, row_key='name')
+        ui.table(columns=table_cols, rows=rows, row_key='name', title=f"{room.id}")
 
 
 class OperatingRoomScheduleScreen:
     def __init__(self, app_state: AppState, update_interface_cb: Callable) -> None:
         self.app_state = app_state
         app_state.canvas.clear()
-        for room in self.app_state.rooms:
-            with ui.card():
-                ui.label(room.id)
-                RoomSchedule(room)
-            # with ui.card():
-            #     FormattedTextRow(title="Room:", text=f" {room.id}", icon="location_on")
-            #     for day in room.schedule:
-            #         with ui.card():
-            #             ui.label(f"Day: {day}")
-            #             for surgery in room.schedule[day]:
-            #                 with ui.card():
-            #                     ui.label(f"{surgery.name}, {surgery.patient.name}")
-            #                     ui.label(
-            #                         f"{surgery.duration} minutes, {surgery.surgeon}"
-            #                     )
+        with ui.column():
+            for room in self.app_state.rooms:
+                with ui.card():
+                    RoomSchedule(room)
