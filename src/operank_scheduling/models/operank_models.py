@@ -233,9 +233,9 @@ def replace_timeslot_by_surgery(schedule: List, timeslot: Timeslot, surgery: Sur
     schedule[index_to_replace] = surgery
 
 
-def get_surgery_by_name(name: str, surgeries: List[Surgery]):
+def get_surgery_by_patient(patient: Patient, surgeries: List[Surgery]):
     for surgery in surgeries:
-        if name.upper() == surgery.name.upper():
+        if patient == surgery.patient:
             return surgery
 
 
@@ -255,7 +255,8 @@ def schedule_patient_to_timeslot(
     surgeons_list: List[Surgeon],
 ):
     try:
-        surgery = get_surgery_by_name(patient.surgery_name, surgeries)
+        surgery_date = date_and_time.date()
+        surgery = get_surgery_by_patient(patient, surgeries)
         surgeon = get_surgeon_by_name(surgeon_name, surgeons_list)
         surgery.surgeon = surgeon_name
         surgery.set_time(date_and_time)
