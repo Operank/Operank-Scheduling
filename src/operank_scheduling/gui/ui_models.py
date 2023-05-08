@@ -94,6 +94,7 @@ class SetupPage:
         self.is_room_data_complete = False
         self.app_state = app_state
         with self.app_state.canvas.classes("items-center"):
+            ui.label("Please attach patient data and operating room data below.")
             with ui.row():
                 with ui.card():
                     ui.label("Attach patients to be scheduled")
@@ -106,8 +107,10 @@ class SetupPage:
                     ui.upload(on_upload=self.handle_operating_room_upload).props(
                         "accept=.xlsx, .csv, .json"
                     ).classes("max-w-full")
+
+            ui.label("When both files have been uploaded, press the button to start scheduling 🚀")
             with ui.row():
-                ui.button("Schedule!", on_click=self.check_ready).classes(add="disabled")
+                ui.button("Schedule!", on_click=self.check_ready)
 
     def handle_patient_file_upload(
         self, upload_event: events.UploadEventArguments
@@ -137,7 +140,6 @@ class SetupPage:
 
     def check_ready(self):
         if self.is_room_data_complete and self.is_patient_data_complete:
-            scheduling_button.classes(remove="disabled")
             logger.info("Scheduling... ")
             perform_preliminary_scheduling(
                 self.app_state.timeslots, self.app_state.rooms
@@ -149,6 +151,14 @@ class SetupPage:
             logger.info("Moving to scheduling phase")
             self.app_state.current_screen = UIScreen.SCHEDULING
             self.callback()
+        else:
+            missing_files = []
+            if not self.is_room_data_complete:
+                missing_files.append("OR Schedule")
+            if not self.is_patient_data_complete:
+                missing_files.append("Patient Data")
+            missing_text = ", ".join(missing_files)
+            ui.notify(f"Please upload {missing_text}")
 
 
 class PatientSchedulingScreen(StateManager):
