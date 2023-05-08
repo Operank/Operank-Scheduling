@@ -1,4 +1,5 @@
 import json
+import pandas as pd
 from typing import Tuple, List
 
 from operank_scheduling.models.operank_models import (
@@ -82,6 +83,30 @@ def load_patients_from_json(
         surgeries.append(surgery)
         timeslots.append(timeslot)
 
+    return patients, surgeries, timeslots
+
+
+def load_patients_from_excel(
+    excelpath: str,
+) -> Tuple[List[Patient], List[Surgery], List[Timeslot]]:
+    patients = list()
+    surgeries = list()
+    timeslots = list()
+    df = pd.read_excel(excelpath)
+    for _, row in df.iterrows():
+        patient_data = {
+            "name": row["Name"],
+            "patient_id": row["ID"],
+            "surgery_name": row["Surgery"],
+            "referrer": row["Referrer"],
+            "estimated_duration_m": row["Duration"],
+            "phone_number": row["Phone"],
+            "priority": row["Priority"],
+        }
+        patient, surgery, timeslot = parse_single_json_block(patient_data)
+        patients.append(patient)
+        surgeries.append(surgery)
+        timeslots.append(timeslot)
     return patients, surgeries, timeslots
 
 

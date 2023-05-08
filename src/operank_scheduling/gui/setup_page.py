@@ -1,17 +1,21 @@
 import datetime
 from typing import Callable
+import tempfile
 
 from loguru import logger
 from nicegui import events, ui
 
-from operank_scheduling.algo.patient_assignment import \
-    sort_patients_by_priority
-from operank_scheduling.algo.surgery_distribution_models import \
-    perform_preliminary_scheduling
+from operank_scheduling.algo.patient_assignment import sort_patients_by_priority
+from operank_scheduling.algo.surgery_distribution_models import (
+    perform_preliminary_scheduling,
+)
 from operank_scheduling.gui.structs import AppState, UIScreen
 from operank_scheduling.gui.ui_tables import display_patient_table
 from operank_scheduling.models.parse_data_to_models import (
-    load_operating_rooms_from_json, load_patients_from_json)
+    load_operating_rooms_from_json,
+    load_patients_from_json,
+    load_patients_from_excel,
+)
 
 
 class SetupPage:
@@ -44,10 +48,16 @@ class SetupPage:
     def handle_patient_file_upload(
         self, upload_event: events.UploadEventArguments
     ) -> None:
-        file_content = upload_event.content.read().decode("utf-8")
-        patient_list, surgery_list, timeslot_list = load_patients_from_json(
-            file_content, mode="stream"
-        )
+        if upload_event.name.split(".")[-1] == "xlsx":
+            file_content = upload_event.content.read()
+            patient_list, surgery_list, timeslot_list = load_patients_from_excel(
+                file_content
+            )
+        elif upload_event.name.split(".")[-1] == "json":
+            file_content = upload_event.content.read().decode("utf-8")
+            patient_list, surgery_list, timeslot_list = load_patients_from_json(
+                file_content, mode="stream"
+            )
         patient_list = sort_patients_by_priority(patient_list)
         self.app_state.patients = patient_list
         self.app_state.surgeries = surgery_list
@@ -63,7 +73,7 @@ class SetupPage:
         file_content = upload_event.content.read().decode("utf-8")
         self.app_state.rooms = load_operating_rooms_from_json(
             file_content, mode="stream"
-        )[:2]
+        )
         logger.info(f"Data of {len(self.app_state.rooms)} operating rooms recieved!")
         self.is_room_data_complete = True
 
