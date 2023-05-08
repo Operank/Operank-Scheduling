@@ -298,15 +298,16 @@ class PatientSchedulingUI:
                 self.app_state.current_screen = UIScreen.ROOM_SCHEDULE_DISPLAY
                 self.state_update_cb()
             else:
-                ArrowNavigationControls(
-                    direction="left", state_func=self.update_app_state
-                )
-                PatientSchedulingScreen(
-                    app_state, patient_index, refresh_function=self.update_app_state
-                )
-                ArrowNavigationControls(
-                    direction="right", state_func=self.update_app_state
-                )
+                with ui.row():
+                    ArrowNavigationControls(
+                        direction="left", state_func=self.update_app_state
+                    )
+                    PatientSchedulingScreen(
+                        app_state, patient_index, refresh_function=self.update_app_state
+                    )
+                    ArrowNavigationControls(
+                        direction="right", state_func=self.update_app_state
+                    )
                 ui.linear_progress(
                     value=(
                         self.app_state.num_scheduled_patients
