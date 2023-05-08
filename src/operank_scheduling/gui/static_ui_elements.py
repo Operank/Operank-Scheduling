@@ -9,3 +9,8 @@ class OperankHeader:
         with self.header:
             ui.label("Operank").style('font-size: 4em')
             ui.image("/images/operank_logo.jpg").style("height: 40px; width: 40px")
+
+
+class OperankFooter:
+    def __init__(self) -> None:
+        ui.footer()
