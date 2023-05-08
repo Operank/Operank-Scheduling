@@ -15,6 +15,12 @@ from operank_scheduling.models.parse_data_to_models import (
     load_patients_from_json,
 )
 from operank_scheduling.algo.patient_assignment import sort_patients_by_priority
+from operank_scheduling.algo.surgery_distribution_models import (
+    perform_preliminary_scheduling,
+)
+from operank_scheduling.models.operank_models import get_all_surgeons
+from operank_scheduling.models.parse_hopital_data import load_surgeon_schedules
+
 
 from .theme import AppTheme
 import datetime
@@ -59,8 +65,16 @@ def fetch_valid_timeslots(patient: Patient, app_state: AppState):
 
 
 class StateManager:
-    def __init__(self, app_state: AppState) -> None:
-        self.app_state = app_state
+    def __init__(self) -> None:
+        self.app_state = AppState(patients=[],
+                                  timeslots=[],
+                                  rooms=[],
+                                  surgeons=[],
+                                  surgeries=[])
+        logger.info("Loading surgeon data...")
+        self.app_state.surgeons = get_all_surgeons()
+        logger.info("Loading surgeon schedules...")
+        load_surgeon_schedules(self.app_state.surgeons)
         self.update_app_state()
 
     def update_app_state(self):
@@ -74,21 +88,25 @@ class StateManager:
 
 class SetupPage:
     def __init__(self, app_state: AppState, update_cb: Callable) -> None:
+        self.callback = update_cb
         self.is_patient_data_complete = False
         self.is_room_data_complete = False
         self.app_state = app_state
-        with ui.row():
-            with ui.card():
-                ui.label("Attach patients to be scheduled")
-                ui.upload(on_upload=self.handle_patient_file_upload).props(
-                    "accept=.xlsx, .csv, .json"
-                ).classes("max-w-full")
+        with self.app_state.canvas.classes("items-center"):
+            with ui.row():
+                with ui.card():
+                    ui.label("Attach patients to be scheduled")
+                    ui.upload(on_upload=self.handle_patient_file_upload).props(
+                        "accept=.xlsx, .csv, .json"
+                    ).classes("max-w-full")
 
-            with ui.card():
-                ui.label("Attach operating room schedule")
-                ui.upload(on_upload=self.handle_operating_room_upload).props(
-                    "accept=.xlsx, .csv, .json"
-                ).classes("max-w-full")
+                with ui.card():
+                    ui.label("Attach operating room schedule")
+                    ui.upload(on_upload=self.handle_operating_room_upload).props(
+                        "accept=.xlsx, .csv, .json"
+                    ).classes("max-w-full")
+            with ui.row():
+                ui.button("Schedule!", on_click=self.check_ready)
 
     def handle_patient_file_upload(
         self, upload_event: events.UploadEventArguments
@@ -110,9 +128,21 @@ class SetupPage:
         file_content = upload_event.content.read().decode("utf-8")
         self.app_state.rooms = load_operating_rooms_from_json(
             file_content, mode="stream"
-        )
+        )[:2]
         logger.info(f"Data of {len(self.app_state.rooms)} operating rooms recieved!")
         self.is_room_data_complete = True
+
+    def check_ready(self):
+        if self.is_room_data_complete and self.is_patient_data_complete:
+            logger.info("Scheduling... ")
+            perform_preliminary_scheduling(self.app_state.timeslots, self.app_state.rooms)
+
+            for room in self.app_state.rooms:
+                room.schedule_timeslots_to_days(datetime.datetime.now().date())
+
+            logger.info("Moving to scheduling phase")
+            self.app_state.current_screen = UIScreen.SCHEDULING
+            self.callback()
 
 
 class PatientSchedulingScreen(StateManager):
@@ -255,6 +285,7 @@ class ArrowNavigationControls:
 class PatientSchedulingUI:
     def __init__(self, app_state: AppState, state_update_cb: Callable) -> None:
         self.app_state = app_state
+        app_state.canvas.clear()
         self.state_update_cb = state_update_cb
         self.patients_to_schedule = len(self.app_state.patients)
         self.display_patient_scheduling_ui()
