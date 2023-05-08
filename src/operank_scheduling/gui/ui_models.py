@@ -25,6 +25,7 @@ from operank_scheduling.gui.ui_tables import display_patient_table
 from .theme import AppTheme
 import datetime
 from enum import Enum, auto
+import pandas as pd
 from loguru import logger
 
 
@@ -64,13 +65,13 @@ def fetch_valid_timeslots(patient: Patient, app_state: AppState):
     return [(slot[0].id, slot[1], slot[2], slot[3]) for slot in timeslots_data]
 
 
+export_app_state = None
+
 class StateManager:
     def __init__(self) -> None:
-        self.app_state = AppState(patients=[],
-                                  timeslots=[],
-                                  rooms=[],
-                                  surgeons=[],
-                                  surgeries=[])
+        self.app_state = AppState(
+            patients=[], timeslots=[], rooms=[], surgeons=[], surgeries=[]
+        )
         logger.info("Loading surgeon data...")
         self.app_state.surgeons = get_all_surgeons()
         logger.info("Loading surgeon schedules...")
@@ -106,7 +107,7 @@ class SetupPage:
                         "accept=.xlsx, .csv, .json"
                     ).classes("max-w-full")
             with ui.row():
-                ui.button("Schedule!", on_click=self.check_ready)
+                ui.button("Schedule!", on_click=self.check_ready).classes(add="disabled")
 
     def handle_patient_file_upload(
         self, upload_event: events.UploadEventArguments
@@ -136,8 +137,11 @@ class SetupPage:
 
     def check_ready(self):
         if self.is_room_data_complete and self.is_patient_data_complete:
+            scheduling_button.classes(remove="disabled")
             logger.info("Scheduling... ")
-            perform_preliminary_scheduling(self.app_state.timeslots, self.app_state.rooms)
+            perform_preliminary_scheduling(
+                self.app_state.timeslots, self.app_state.rooms
+            )
 
             for room in self.app_state.rooms:
                 room.schedule_timeslots_to_days(datetime.datetime.now().date())
@@ -390,9 +394,49 @@ class RoomSchedule:
 
 class OperatingRoomScheduleScreen:
     def __init__(self, app_state: AppState, update_interface_cb: Callable) -> None:
+        global export_app_state
         self.app_state = app_state
-        app_state.canvas.clear()
-        with ui.column():
+        self.app_state.canvas.clear()
+        with self.app_state.canvas.classes("items-center"):
             for room in self.app_state.rooms:
                 with ui.card():
                     RoomSchedule(room)
+            export_app_state = self.app_state
+            ui.button(
+                "Export to Excel", on_click=export_schedule_as_excel
+            )
+
+
+def export_schedule_as_excel():
+    global export_app_state
+    df = pd.DataFrame(
+        columns=[
+            "Date",
+            "Start Time",
+            "End Time",
+            "OR",
+            "Patient ID",
+            "Patient Name",
+            "Surgery",
+            "Surgeon",
+        ]
+    )
+    for room in export_app_state.rooms:
+        for day in room.schedule:
+            for event in room.schedule[day]:
+                patient = event.patient
+                surgery_data = {
+                    "Date": day,
+                    "Start Time": event.scheduled_time,
+                    "End Time": event.scheduled_time
+                    + datetime.timedelta(minutes=event.duration),
+                    "OR": room.id,
+                    "Patient ID": patient.patient_id,
+                    "Patient Name": patient.name,
+                    "Surgery": patient.surgery_name,
+                    "Surgeon": event.surgeon,
+                }
+                df = df.append(surgery_data, ignore_index=True)
+    df.sort_values(by=['Date'], inplace=True)
+    df.to_excel("Exported_Schedule.xlsx", sheet_name="OR Schedule")
+    ui.notify("Exported the schedule successfully! 🚀")
