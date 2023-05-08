@@ -20,7 +20,7 @@ from operank_scheduling.algo.surgery_distribution_models import (
 )
 from operank_scheduling.models.operank_models import get_all_surgeons
 from operank_scheduling.models.parse_hopital_data import load_surgeon_schedules
-
+from operank_scheduling.gui.ui_tables import display_patient_table
 
 from .theme import AppTheme
 import datetime
@@ -50,7 +50,7 @@ class AppState:
         self.surgeries = surgeries
         self.current_screen = UIScreen.SETUP
         self.num_scheduled_patients = 0
-        self.canvas = ui.row().classes("m-auto")
+        self.canvas = ui.column().classes("m-auto")
         self.current_patient_idx = 0
 
 
@@ -120,6 +120,8 @@ class SetupPage:
         self.app_state.surgeries = surgery_list
         self.app_state.timeslots = timeslot_list
         logger.info(f"Data of {len(patient_list)} patients recieved!")
+        with self.app_state.canvas.classes("items-center"):
+            display_patient_table(self.app_state.patients)
         self.is_patient_data_complete = True
 
     def handle_operating_room_upload(
