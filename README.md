@@ -1,8 +1,7 @@
 # Operank
 
 ## Installation (on dev environment)
-To work on this repo as a developer, make sure to perform an **editable** install with pip, using:
-> `pip install -e .` 
+To work on this repo as a developer, make sure to perform an **editable** install with pip, using `pip install -e .` 
 
 This installes the package in 'editable' mode, allowing for the correct imports to work :)
 Other requirements are needed, as specified in the `requirements.txt` file.
