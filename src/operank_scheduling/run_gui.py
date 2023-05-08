@@ -39,7 +39,7 @@ perform_preliminary_scheduling(timeslot_list, operating_rooms)
 for operating_room in operating_rooms:
     operating_room.schedule_timeslots_to_days(datetime.datetime.now().date())
 
-app_state = AppState(patient_list, operating_rooms, surgeons, surgery_list)
+app_state = AppState(patient_list, timeslot_list, operating_rooms, surgeons, surgery_list)
 
 OperankHeader()
 StateManager(app_state)

@@ -1,4 +1,4 @@
-from nicegui import ui
+from nicegui import ui, events
 from typing import List, Callable, Tuple
 from operank_scheduling.models.operank_models import (
     Patient,
@@ -10,12 +10,20 @@ from operank_scheduling.models.operank_models import (
     schedule_patient_to_timeslot,
 )
 from operank_scheduling.algo.patient_assignment import suggest_feasible_dates
+from operank_scheduling.models.parse_data_to_models import (
+    load_operating_rooms_from_json,
+    load_patients_from_json,
+)
+from operank_scheduling.algo.patient_assignment import sort_patients_by_priority
+
 from .theme import AppTheme
 import datetime
 from enum import Enum, auto
+from loguru import logger
 
 
 class UIScreen(Enum):
+    SETUP = auto()
     SCHEDULING = auto()
     ROOM_SCHEDULE_DISPLAY = auto()
 
@@ -24,15 +32,17 @@ class AppState:
     def __init__(
         self,
         patients: List[Patient],
+        timeslots: List[Timeslot],
         rooms: List[OperatingRoom],
         surgeons: List[Surgeon],
         surgeries: List[Surgery],
     ) -> None:
+        self.timeslots = timeslots
         self.patients = patients
         self.rooms = rooms
         self.surgeons = surgeons
         self.surgeries = surgeries
-        self.current_screen = UIScreen.SCHEDULING
+        self.current_screen = UIScreen.SETUP
         self.num_scheduled_patients = 0
         self.canvas = ui.row().classes("m-auto")
         self.current_patient_idx = 0
@@ -58,6 +68,51 @@ class StateManager:
             PatientSchedulingUI(self.app_state, self.update_app_state)
         elif self.app_state.current_screen == UIScreen.ROOM_SCHEDULE_DISPLAY:
             OperatingRoomScheduleScreen(self.app_state, self.update_app_state)
+        elif self.app_state.current_screen == UIScreen.SETUP:
+            SetupPage(self.app_state, self.update_app_state)
+
+
+class SetupPage:
+    def __init__(self, app_state: AppState, update_cb: Callable) -> None:
+        self.is_patient_data_complete = False
+        self.is_room_data_complete = False
+        self.app_state = app_state
+        with ui.row():
+            with ui.card():
+                ui.label("Attach patients to be scheduled")
+                ui.upload(on_upload=self.handle_patient_file_upload).props(
+                    "accept=.xlsx, .csv, .json"
+                ).classes("max-w-full")
+
+            with ui.card():
+                ui.label("Attach operating room schedule")
+                ui.upload(on_upload=self.handle_operating_room_upload).props(
+                    "accept=.xlsx, .csv, .json"
+                ).classes("max-w-full")
+
+    def handle_patient_file_upload(
+        self, upload_event: events.UploadEventArguments
+    ) -> None:
+        file_content = upload_event.content.read().decode("utf-8")
+        patient_list, surgery_list, timeslot_list = load_patients_from_json(
+            file_content, mode="stream"
+        )
+        patient_list = sort_patients_by_priority(patient_list)
+        self.app_state.patients = patient_list
+        self.app_state.surgeries = surgery_list
+        self.app_state.timeslots = timeslot_list
+        logger.info(f"Data of {len(patient_list)} patients recieved!")
+        self.is_patient_data_complete = True
+
+    def handle_operating_room_upload(
+        self, upload_event: events.UploadEventArguments
+    ) -> None:
+        file_content = upload_event.content.read().decode("utf-8")
+        self.app_state.rooms = load_operating_rooms_from_json(
+            file_content, mode="stream"
+        )
+        logger.info(f"Data of {len(self.app_state.rooms)} operating rooms recieved!")
+        self.is_room_data_complete = True
 
 
 class PatientSchedulingScreen(StateManager):
@@ -249,11 +304,27 @@ class PatientSchedulingUI:
 class RoomSchedule:
     def __init__(self, room: OperatingRoom):
         table_cols = [
-            {"name": "date", "label": "Date", "field": "date", "align": "left", 'sortable' : True},
+            {
+                "name": "date",
+                "label": "Date",
+                "field": "date",
+                "align": "left",
+                "sortable": True,
+            },
             {"name": "start", "label": "Start Time", "field": "start", "align": "left"},
             {"name": "end", "label": "End Time", "field": "end", "align": "left"},
-            {"name": "surgeon", "label": "Surgeon", "field": "surgeon", "align": "left"},
-            {"name": "patient", "label": "Patient", "field": "patient", "align": "left"},
+            {
+                "name": "surgeon",
+                "label": "Surgeon",
+                "field": "surgeon",
+                "align": "left",
+            },
+            {
+                "name": "patient",
+                "label": "Patient",
+                "field": "patient",
+                "align": "left",
+            },
             {
                 "name": "procedure",
                 "label": "Surgery",
@@ -265,16 +336,22 @@ class RoomSchedule:
         for day in room.schedule:
             daily_rows = []
             for surgery in room.schedule[day]:
-                surgery_end_time = surgery.scheduled_time + datetime.timedelta(minutes=surgery.duration)
-                daily_rows.append({'date' : f'{day}',
-                                   'start' : f'{surgery.scheduled_time.time()}',
-                                   'end' : f'{surgery_end_time.time()}',
-                                   'surgeon' : f'{surgery.surgeon}',
-                                   'patient' : f'{surgery.patient.name}',
-                                   'procedure' : f'{surgery.name}'})
-            daily_rows.sort(key=lambda x: x['start'])
+                surgery_end_time = surgery.scheduled_time + datetime.timedelta(
+                    minutes=surgery.duration
+                )
+                daily_rows.append(
+                    {
+                        "date": f"{day}",
+                        "start": f"{surgery.scheduled_time.time()}",
+                        "end": f"{surgery_end_time.time()}",
+                        "surgeon": f"{surgery.surgeon}",
+                        "patient": f"{surgery.patient.name}",
+                        "procedure": f"{surgery.name}",
+                    }
+                )
+            daily_rows.sort(key=lambda x: x["start"])
             rows += daily_rows
-        ui.table(columns=table_cols, rows=rows, row_key='name', title=f"{room.id}")
+        ui.table(columns=table_cols, rows=rows, row_key="name", title=f"{room.id}")
 
 
 class OperatingRoomScheduleScreen:

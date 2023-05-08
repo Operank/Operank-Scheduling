@@ -63,14 +63,17 @@ def parse_single_json_block(patient_data: dict) -> Tuple[Patient, Surgery, Times
 
 
 def load_patients_from_json(
-    jsonpath: str,
+    jsonpath: str, mode="path"
 ) -> Tuple[List[Patient], List[Surgery], List[Timeslot]]:
     patients = list()
     surgeries = list()
     timeslots = list()
 
-    with open(jsonpath, "r") as json_fp:
-        all_patients = json.load(json_fp)
+    if mode == "path":
+        with open(jsonpath, "r") as json_fp:
+            all_patients = json.load(json_fp)
+    elif mode == "stream":
+        all_patients = json.loads(jsonpath)
     full_patient_data = all_patients["patients"]
 
     for single_patient_data in full_patient_data:
@@ -101,10 +104,13 @@ def parse_operating_room_json_to_model(operating_room_data: str) -> OperatingRoo
     return operating_room
 
 
-def load_operating_rooms_from_json(jsonpath: str) -> List[OperatingRoom]:
+def load_operating_rooms_from_json(jsonpath: str, mode="path") -> List[OperatingRoom]:
     operating_rooms = list()
-    with open(jsonpath, "r") as json_fp:
-        loaded_operating_rooms = json.load(json_fp)
+    if mode == "path":
+        with open(jsonpath, "r") as json_fp:
+            loaded_operating_rooms = json.load(json_fp)
+    elif mode == "stream":
+        loaded_operating_rooms = json.loads(jsonpath)
     loaded_operating_rooms = loaded_operating_rooms["operating_rooms"]
     for room in loaded_operating_rooms:
         operating_rooms.append(parse_operating_room_json_to_model(room))
