@@ -1,0 +1,1 @@
+.\venv\Scripts\activate && python .\src\operank_scheduling\run_gui.py
