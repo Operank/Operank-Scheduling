@@ -24,6 +24,7 @@ class SetupPage:
         self.is_patient_data_complete = False
         self.is_room_data_complete = False
         self.app_state = app_state
+        self.patients_table = ui.column().classes("m-auto")
         with self.app_state.canvas.classes("items-center"):
             ui.label("Please attach patient data and operating room data below.")
             with ui.row():
@@ -64,7 +65,9 @@ class SetupPage:
         self.app_state.timeslots = timeslot_list
         logger.info(f"Data of {len(patient_list)} patients recieved!")
         with self.app_state.canvas.classes("items-center"):
-            display_patient_table(self.app_state.patients)
+            self.patients_table.clear()
+            with self.patients_table:
+                display_patient_table(self.app_state.patients)
         self.is_patient_data_complete = True
 
     def handle_operating_room_upload(
@@ -80,6 +83,9 @@ class SetupPage:
     def check_ready(self):
         if self.is_room_data_complete and self.is_patient_data_complete:
             logger.info("Scheduling... ")
+            with self.app_state.canvas.classes("items-center"):
+                self.patients_table.clear()
+                ui.spinner(size='5em')
             perform_preliminary_scheduling(
                 self.app_state.timeslots, self.app_state.rooms
             )
