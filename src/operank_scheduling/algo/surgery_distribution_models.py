@@ -196,6 +196,13 @@ def distribute_timeslots_to_days(rooms: List[OperatingRoom]):
             logger.warning(f"[Optimization] Failed to solve, status: {status}")
 
 
-def perform_preliminary_scheduling(timeslot_list: List[Timeslot], operating_rooms: List[OperatingRoom]):
+def perform_preliminary_scheduling(
+    timeslot_list: List[Timeslot], operating_rooms: List[OperatingRoom]
+):
+    # if len(timeslot_list) <= len(operating_rooms):
+        # We have too few surgeries to schedule, or too many rooms as options
+    max_rooms = min(len(timeslot_list) // 4, len(operating_rooms))
+    operating_rooms = operating_rooms[:max_rooms]
+    logger.debug(f"Actually using {max_rooms} rooms")
     distribute_timeslots_to_operating_rooms(timeslot_list, operating_rooms)
     distribute_timeslots_to_days(operating_rooms)
