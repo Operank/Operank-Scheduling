@@ -7,7 +7,7 @@ class OperankHeader:
         app.add_static_files("/images", str(find_project_root() / "assets"))
         self.header = ui.header().classes("justify-between")
         with self.header:
-            ui.label("Operank").style('font-size: 4em')
+            ui.label("Operank").style('font-size: 2em')
             ui.image("/images/operank_logo.jpg").style("height: 40px; width: 40px")
 
 
