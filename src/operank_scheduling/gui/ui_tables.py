@@ -3,7 +3,7 @@ from typing import List
 from operank_scheduling.models.operank_models import Patient
 
 
-def display_patient_table(patients: List[Patient]):
+def display_patient_table(patients: List[Patient]) -> ui.table:
     table_cols = [
         {
             "name": "name",
