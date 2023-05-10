@@ -76,7 +76,7 @@ def find_suitable_surgeons(
 def remove_duplicate_suggestions(
     suggestions: List[Tuple[OperatingRoom, datetime.datetime, Timeslot, str]]
 ):
-    # For each day, return just one option for a single surgeon
+    # For each day, return just one per day
     final_suggestions = []
     seen_datetimes = []
     for suggestion in suggestions:
@@ -145,7 +145,7 @@ def find_suitable_timeslots(
         return None
     else:
         # Remove "duplicates"
-        # suitable_timeslots = remove_duplicate_suggestions(suitable_timeslots)
+        suitable_timeslots = remove_duplicate_suggestions(suitable_timeslots)
         minimal_timeslot = min(suitable_timeslots, key=lambda x: x[2].duration)
         suitable_minimal_timeslots = [
             timeslot

@@ -11,6 +11,7 @@ from operank_scheduling.algo.surgery_distribution_models import (
 )
 from operank_scheduling.gui.structs import AppState, UIScreen
 from operank_scheduling.gui.ui_tables import display_patient_table
+from operank_scheduling.models.operank_models import Timeslot
 from operank_scheduling.models.parse_data_to_models import (
     load_operating_rooms_from_json,
     load_patients_from_json,
@@ -59,6 +60,10 @@ class SetupPage:
             patient_list, surgery_list, timeslot_list = load_patients_from_json(
                 file_content, mode="stream"
             )
+        timeslot_list.extend(
+            [Timeslot(360), Timeslot(180), Timeslot(90), Timeslot(120)]
+        )
+        logger.warning("Added extra timeslots!!!!")
         patient_list = sort_patients_by_priority(patient_list)
         self.app_state.patients = patient_list
         self.app_state.surgeries = surgery_list

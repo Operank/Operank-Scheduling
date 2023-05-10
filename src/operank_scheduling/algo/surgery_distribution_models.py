@@ -83,7 +83,8 @@ def distribute_timeslots_to_operating_rooms(
     solver = cp_model.CpSolver()
     solution_cb = SurgeryToRoomSolutionCallback(data, timeslots, rooms, x)
     solver.parameters.enumerate_all_solutions = True
-    solver.parameters.max_time_in_seconds = 10.0 * 60
+    # solver.parameters.max_time_in_seconds = 10.0 * 60
+    solver.parameters.max_time_in_seconds = 10.0
     # solver.parameters.num_search_workers = 4
     logger.warning(
         f"Set max solve time to be: {solver.parameters.max_time_in_seconds} [s]"

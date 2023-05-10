@@ -5,7 +5,7 @@ import pandas as pd
 from nicegui import ui
 
 from operank_scheduling.gui.structs import AppState
-from operank_scheduling.models.operank_models import OperatingRoom
+from operank_scheduling.models.operank_models import OperatingRoom, Timeslot
 
 
 class RoomSchedule:
@@ -43,6 +43,8 @@ class RoomSchedule:
         for day in room.schedule:
             daily_rows = []
             for surgery in room.schedule[day]:
+                if isinstance(surgery, Timeslot):
+                    continue
                 surgery_end_time = surgery.scheduled_time + datetime.timedelta(
                     minutes=surgery.duration
                 )
@@ -91,6 +93,8 @@ def export_schedule_as_excel():
     for room in export_app_state.rooms:
         for day in room.schedule:
             for event in room.schedule[day]:
+                if isinstance(event, Timeslot):
+                    continue
                 patient = event.patient
                 surgery_data = {
                     "Date": day,
