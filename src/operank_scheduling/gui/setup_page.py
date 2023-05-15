@@ -1,6 +1,5 @@
 import datetime
 from typing import Callable
-import tempfile
 
 from loguru import logger
 from nicegui import events, ui
