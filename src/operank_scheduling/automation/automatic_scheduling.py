@@ -14,7 +14,7 @@ from operank_scheduling.algo.patient_assignment import (
 from operank_scheduling.algo.surgery_distribution_models import (
     perform_preliminary_scheduling,
 )
-from operank_scheduling.automation.metrics import get_average_utilization
+from operank_scheduling.automation.metrics import get_average_utilization, get_days_used
 from operank_scheduling.models.io_utilities import find_project_root
 from operank_scheduling.models.operank_models import (
     Timeslot,
@@ -154,11 +154,18 @@ if __name__ == "__main__":
         run_automation_cycle(automation_index)
     file_list = glob.glob("validation/*")
     utilization_data = dict()
+    days_used = dict()
     for result_index, path in enumerate(file_list):
         utilization_data[result_index] = get_average_utilization(path)
+        days_used[result_index] = get_days_used(path)
 
     total_mean_utilization = np.mean(list(utilization_data.values()))
+    mean_days_used = np.mean(list(days_used.values()))
     logger.info(
         f"Mean utilization over all runs: {total_mean_utilization:.2f}, "
         f"Distribution per run: {list(utilization_data.values())}"
+    )
+    logger.info(
+        f"Mean days used: {mean_days_used:.2f}, "
+        f"Distribution per run: {list(days_used.values())}"
     )

@@ -21,3 +21,9 @@ def get_average_utilization(path):
         dfs.append(daily_utilization)
 
     return np.mean(utilization_avg)
+
+
+def get_days_used(path):
+    system_output = pd.read_excel(path)
+    system_output["Duration"] = system_output["End Time"] - system_output["Start Time"]
+    return len(system_output["Date"].unique())
