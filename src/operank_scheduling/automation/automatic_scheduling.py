@@ -1,7 +1,10 @@
 import datetime
+import glob
+import os
 from random import choice
-import pandas as pd
 
+import numpy as np
+import pandas as pd
 from loguru import logger
 
 from operank_scheduling.algo.patient_assignment import (
@@ -11,18 +14,19 @@ from operank_scheduling.algo.patient_assignment import (
 from operank_scheduling.algo.surgery_distribution_models import (
     perform_preliminary_scheduling,
 )
+from operank_scheduling.automation.metrics import get_average_utilization
 from operank_scheduling.models.io_utilities import find_project_root
-from operank_scheduling.models.operank_models import get_all_surgeons
+from operank_scheduling.models.operank_models import (
+    Timeslot,
+    get_all_surgeons,
+    get_operating_room_by_name,
+    schedule_patient_to_timeslot,
+)
 from operank_scheduling.models.parse_data_to_models import (
     load_operating_rooms_from_json,
     load_patients_from_excel,
 )
 from operank_scheduling.models.parse_hopital_data import load_surgeon_schedules
-from operank_scheduling.models.operank_models import (
-    get_operating_room_by_name,
-    schedule_patient_to_timeslot,
-    Timeslot,
-)
 
 
 # Export
@@ -68,14 +72,13 @@ root_dir = find_project_root()
 export_dir = root_dir / "validation"
 num_runs = 5
 
-for automation_index in range(num_runs):
+
+def run_automation_cycle(automation_index: int):
     # Load surgeons
     logger.info("Loading surgeon data...")
     surgeon_list = get_all_surgeons()
     logger.info("Loading surgeon schedules...")
     load_surgeon_schedules(surgeon_list)
-
-
 
     # Load patients from file
     patients_file = root_dir / "assets" / "test_30.xlsx"
@@ -85,7 +88,22 @@ for automation_index in range(num_runs):
     patient_list = sort_patients_by_priority(patient_list)
 
     # TODO: Consider adding timeslots here
-    timeslot_list.extend([Timeslot(360), Timeslot(180), Timeslot(90), Timeslot(120)])
+    timeslot_list.extend(
+        [
+            Timeslot(180),
+            Timeslot(180),
+            Timeslot(60),
+            Timeslot(60),
+            Timeslot(120),
+            Timeslot(120),
+            Timeslot(180),
+            # Timeslot(180),
+            # Timeslot(60),
+            # Timeslot(60),
+            # Timeslot(120),
+            # Timeslot(120),
+        ]
+    )
     logger.warning("Added extra timeslots!!!!")
 
     # Do preliminary scheduling
@@ -99,8 +117,8 @@ for automation_index in range(num_runs):
             patient, surgery_list, operating_rooms, surgeon_list
         )
         if timeslots_data is None:
-            logger.critical(f"Failed to schedule ❌")
-            continue
+            logger.critical("Failed to schedule ❌")
+            break
         selected_timeslot = choice(timeslots_data)
         room = selected_timeslot[0]
         best_slot = selected_timeslot[1]
@@ -122,3 +140,25 @@ for automation_index in range(num_runs):
         operating_rooms, export_dir / f"automated_schedule_{automation_index + 1}.xlsx"
     )
     logger.info("Exported schedule ✅")
+
+
+if __name__ == "__main__":
+    root_dir / "validation/*"
+    # Remove previous contents of dir:
+    logger.info("Removing past results... 🧹")
+    file_list = glob.glob("validation/*")
+    for filepath in file_list:
+        os.remove(filepath)
+
+    for automation_index in range(num_runs):
+        run_automation_cycle(automation_index)
+    file_list = glob.glob("validation/*")
+    utilization_data = dict()
+    for result_index, path in enumerate(file_list):
+        utilization_data[result_index] = get_average_utilization(path)
+
+    total_mean_utilization = np.mean(list(utilization_data.values()))
+    logger.info(
+        f"Mean utilization over all runs: {total_mean_utilization:.2f}, "
+        f"Distribution per run: {list(utilization_data.values())}"
+    )
