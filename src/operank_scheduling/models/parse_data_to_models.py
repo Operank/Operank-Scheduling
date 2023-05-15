@@ -10,6 +10,7 @@ from operank_scheduling.models.operank_models import (
 )
 
 from .enums import weekdays_to_numbers
+from operank_scheduling.prediction.surgery_duration_estimation import estimate_surgery_durations
 
 """
 Read patient data given in the format:
@@ -76,6 +77,7 @@ def load_patients_from_json(
     elif mode == "stream":
         all_patients = json.loads(jsonpath)
     full_patient_data = all_patients["patients"]
+    full_patient_data = estimate_surgery_durations(full_patient_data)  # Add estimated duration based on ML model
 
     for single_patient_data in full_patient_data:
         patient, surgery, timeslot = parse_single_json_block(single_patient_data)
@@ -93,13 +95,15 @@ def load_patients_from_excel(
     surgeries = list()
     timeslots = list()
     df = pd.read_excel(excelpath)
+    df = estimate_surgery_durations(df)  # Add estimated duration based on ML model
+
     for _, row in df.iterrows():
         patient_data = {
             "name": row["Name"],
             "patient_id": row["ID"],
             "surgery_name": row["Surgery"],
             "referrer": row["Referrer"],
-            "estimated_duration_m": row["Duration"],
+            "estimated_duration_m": row["estimated_duration_m"],
             "phone_number": row["Phone"],
             "priority": row["Priority"],
         }
