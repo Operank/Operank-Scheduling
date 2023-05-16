@@ -22,6 +22,30 @@ def sort_patients_by_priority(patient_list: List[Patient]) -> List[Patient]:
     return sorted(patient_list, key=lambda p: p.priority)
 
 
+def sort_patients_by_duration(patient_list: List[Patient]) -> List[Patient]:
+    return sorted(patient_list, key=lambda p: p.duration_m, reverse=True)
+
+
+def sort_patients_by_priority_and_duration(
+    patient_list: List[Patient],
+) -> List[Patient]:
+    # Find unique priorities:
+    sorted_output = list()
+    priorities = set()
+    for patient in patient_list:
+        priorities.add(patient.priority)
+
+    sorted_priorities = sorted(list(priorities))
+    for priority in sorted_priorities:
+        relevant_patients = [
+            patient for patient in patient_list if patient.priority == priority
+        ]
+        sorted_by_duration = sort_patients_by_duration(relevant_patients)
+        sorted_output.extend(sorted_by_duration)
+    # surgery_to_do = get_surgery_by_patient(patient)
+    return sorted_output
+
+
 def get_surgery_by_patient(patient: Patient, surgeries: List[Surgery]) -> Surgery:
     for surgery in surgeries:
         if surgery.uuid == patient.uuid:
@@ -187,7 +211,7 @@ def schedule_patients(
     surgeons = get_all_surgeons()
     load_surgeon_schedules(surgeons)
 
-    sorted_patients = sort_patients_by_priority(patients)
+    sorted_patients = sort_patients_by_priority_and_duration(patients)
     for patient in sorted_patients:
         logger.debug(f"Now scheduling {patient.name}")
         dates = suggest_feasible_dates(patient, surgeries, rooms, surgeons)
