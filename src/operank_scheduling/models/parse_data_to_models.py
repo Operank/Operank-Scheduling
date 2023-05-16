@@ -77,7 +77,8 @@ def load_patients_from_json(
     elif mode == "stream":
         all_patients = json.loads(jsonpath)
     full_patient_data = all_patients["patients"]
-    full_patient_data = estimate_surgery_durations(full_patient_data)  # Add estimated duration based on ML model
+    patient_data_df = pd.DataFrame.from_dict(full_patient_data)
+    full_patient_data = estimate_surgery_durations(patient_data_df)  # Add estimated duration based on ML model
 
     for single_patient_data in full_patient_data:
         patient, surgery, timeslot = parse_single_json_block(single_patient_data)
