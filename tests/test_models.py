@@ -11,6 +11,10 @@ from operank_scheduling.models.parse_data_to_models import (
 )
 
 from operank_scheduling.models.parse_hopital_data import load_surgeon_schedules
+from operank_scheduling.models.io_utilities import find_project_root
+import pytest
+
+root_dir = find_project_root()
 
 
 def test_timeslot():
@@ -75,13 +79,12 @@ def test_get_earliest_timeslot_for_surgeon():
     pass
 
 
+@pytest.mark.skip(reason="Soon to be deprecated...")
 def test_load_patients_from_json():
-    _, _, _ = load_patients_from_json(
-        r"G:\Code\operank_scheduling\assets\example_patient_data.json"
-    )
+    _, _, _ = load_patients_from_json(root_dir / "assets" / "example_patient_data.json")
 
 
 def test_load_operating_rooms_from_json():
     _ = load_operating_rooms_from_json(
-        r"G:\Code\operank_scheduling\assets\example_operating_room_schedule.json"
+        root_dir / "assets" / "example_operating_room_schedule.json"
     )

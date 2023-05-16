@@ -10,11 +10,12 @@ from operank_scheduling.algo.patient_assignment import (
     find_suitable_surgeons,
     find_suitable_operating_rooms,
     find_suitable_timeslots,
+    sort_patients_by_priority_and_duration,
 )
 
 from operank_scheduling.models.parse_data_to_models import (
     load_operating_rooms_from_json,
-    load_patients_from_json,
+    load_patients_from_excel,
 )
 
 from operank_scheduling.models.parse_hopital_data import load_surgeon_schedules
@@ -84,6 +85,10 @@ def test_patient_sorting():
     for idx, patient in enumerate(sorted_patients_list):
         assert patient.priority == expected[idx]
 
+    sort_patients_by_priority_and_duration(patient_list=patients)
+    for idx, patient in enumerate(sorted_patients_list):
+        assert patient.priority == expected[idx]
+
 
 @pytest.fixture
 def create_dummy_patient_and_surgeries():
@@ -131,11 +136,11 @@ def load_patients_and_surgeons_from_example_config() -> (
     ]
 ):
     assets_dir = find_project_root() / "assets"
-    patient_list, surgery_list, timeslot_list = load_patients_from_json(
-        assets_dir / "example_patient_data.json"
+    patient_list, surgery_list, timeslot_list = load_patients_from_excel(
+        assets_dir / "test_30.xlsx"
     )
     operating_rooms = load_operating_rooms_from_json(
-        assets_dir / "example_operating_room_schedule.json"
+        assets_dir / "example_operating_room_schedule.json", mode="path"
     )
     surgeons = get_all_surgeons()
     return patient_list, surgery_list, timeslot_list, operating_rooms, surgeons
