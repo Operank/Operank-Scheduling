@@ -8,7 +8,7 @@ import pandas as pd
 from loguru import logger
 
 from operank_scheduling.algo.patient_assignment import (
-    sort_patients_by_priority,
+    sort_patients_by_priority_and_duration,
     suggest_feasible_dates,
 )
 from operank_scheduling.algo.surgery_distribution_models import (
@@ -70,7 +70,6 @@ def export_schedule_as_excel(operating_rooms, filepath=None):
 
 root_dir = find_project_root()
 export_dir = root_dir / "validation"
-num_runs = 5
 
 
 def run_automation_cycle(automation_index: int):
@@ -85,7 +84,8 @@ def run_automation_cycle(automation_index: int):
     operating_room_file = root_dir / "assets" / "example_operating_room_schedule.json"
     patient_list, surgery_list, timeslot_list = load_patients_from_excel(patients_file)
     operating_rooms = load_operating_rooms_from_json(operating_room_file, mode="path")
-    patient_list = sort_patients_by_priority(patient_list)
+    # patient_list = sort_patients_by_priority(patient_list)
+    patient_list = sort_patients_by_priority_and_duration(patient_list)
 
     # TODO: Consider adding timeslots here
     timeslot_list.extend(
@@ -97,11 +97,11 @@ def run_automation_cycle(automation_index: int):
             Timeslot(120),
             Timeslot(120),
             Timeslot(180),
-            # Timeslot(180),
-            # Timeslot(60),
-            # Timeslot(60),
-            # Timeslot(120),
-            # Timeslot(120),
+            Timeslot(180),
+            Timeslot(60),
+            Timeslot(60),
+            Timeslot(120),
+            Timeslot(120),
         ]
     )
     logger.warning("Added extra timeslots!!!!")
@@ -111,6 +111,7 @@ def run_automation_cycle(automation_index: int):
     for room in operating_rooms:
         room.schedule_timeslots_to_days(datetime.datetime.now().date())
 
+    failed_to_schedule = False
     for idx, patient in enumerate(patient_list):
         logger.info(f"Scheduling patient {idx + 1}/{len(patient_list)}")
         timeslots_data = suggest_feasible_dates(
@@ -118,7 +119,8 @@ def run_automation_cycle(automation_index: int):
         )
         if timeslots_data is None:
             logger.critical("Failed to schedule ❌")
-            break
+            failed_to_schedule = True
+            return False
         selected_timeslot = choice(timeslots_data)
         room = selected_timeslot[0]
         best_slot = selected_timeslot[1]
@@ -136,13 +138,18 @@ def run_automation_cycle(automation_index: int):
         )
         logger.info(f"Scheduled patient {idx + 1} at {best_slot}")
 
-    export_schedule_as_excel(
-        operating_rooms, export_dir / f"automated_schedule_{automation_index + 1}.xlsx"
-    )
-    logger.info("Exported schedule ✅")
+    if not failed_to_schedule:
+        export_schedule_as_excel(
+            operating_rooms,
+            export_dir / f"automated_schedule_{automation_index + 1}.xlsx",
+        )
+        logger.info("Exported schedule ✅")
+        return True
 
 
 if __name__ == "__main__":
+    num_runs = 5
+
     root_dir / "validation/*"
     # Remove previous contents of dir:
     logger.info("Removing past results... 🧹")
@@ -150,11 +157,19 @@ if __name__ == "__main__":
     for filepath in file_list:
         os.remove(filepath)
 
+    success_rate_vec = list()
     for automation_index in range(num_runs):
-        run_automation_cycle(automation_index)
+        ret = run_automation_cycle(automation_index)
+        success_rate_vec.append(ret)
     file_list = glob.glob("validation/*")
+
     utilization_data = dict()
     days_used = dict()
+
+    logger.info(
+        f"Succeeded in {sum(success_rate_vec)} out of {len(success_rate_vec)} scheduling attempts"
+    )
+
     for result_index, path in enumerate(file_list):
         utilization_data[result_index] = get_average_utilization(path)
         days_used[result_index] = get_days_used(path)

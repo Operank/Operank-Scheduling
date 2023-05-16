@@ -4,7 +4,7 @@ from typing import Callable
 from loguru import logger
 from nicegui import events, ui
 
-from operank_scheduling.algo.patient_assignment import sort_patients_by_priority
+from operank_scheduling.algo.patient_assignment import sort_patients_by_priority_and_duration
 from operank_scheduling.algo.surgery_distribution_models import (
     perform_preliminary_scheduling,
 )
@@ -63,7 +63,7 @@ class SetupPage:
             [Timeslot(360), Timeslot(180), Timeslot(90), Timeslot(120)]
         )
         logger.warning("Added extra timeslots!!!!")
-        patient_list = sort_patients_by_priority(patient_list)
+        patient_list = sort_patients_by_priority_and_duration(patient_list)
         self.app_state.patients = patient_list
         self.app_state.surgeries = surgery_list
         self.app_state.timeslots = timeslot_list
