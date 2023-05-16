@@ -77,6 +77,7 @@ export_dir = root_dir / "validation"
 
 
 def run_automation_cycle(automation_index: int):
+    failed_to_schedule = 0
     # Load surgeons
     logger.info("Loading surgeon data...")
     surgeon_list = get_all_surgeons()
@@ -88,24 +89,27 @@ def run_automation_cycle(automation_index: int):
     operating_room_file = root_dir / "assets" / "example_operating_room_schedule.json"
     patient_list, surgery_list, timeslot_list = load_patients_from_excel(patients_file)
     operating_rooms = load_operating_rooms_from_json(operating_room_file, mode="path")
-    # patient_list = sort_patients_by_priority(patient_list)
     patient_list = sort_patients_by_priority_and_duration(patient_list)
 
     # TODO: Consider adding timeslots here
     timeslot_list.extend(
         [
             Timeslot(180),
-            Timeslot(180),
-            Timeslot(60),
-            Timeslot(60),
+            # Timeslot(180),
+            # Timeslot(180),
+            # Timeslot(180),
+            # Timeslot(180),
+            # Timeslot(180),
             Timeslot(120),
-            Timeslot(120),
-            Timeslot(180),
-            Timeslot(180),
+            # Timeslot(120),
+            # Timeslot(120),
+            # Timeslot(120),
+            # Timeslot(120),
+            # Timeslot(120),
             Timeslot(60),
-            Timeslot(60),
-            Timeslot(120),
-            Timeslot(120),
+            # Timeslot(60),
+            # Timeslot(60),
+            # Timeslot(60),
         ]
     )
     logger.warning("Added extra timeslots!!!!")
@@ -115,40 +119,42 @@ def run_automation_cycle(automation_index: int):
     for room in operating_rooms:
         room.schedule_timeslots_to_days(datetime.datetime.now().date())
 
-    failed_to_schedule = False
     for idx, patient in enumerate(patient_list):
         logger.info(f"Scheduling patient {idx + 1}/{len(patient_list)}")
         timeslots_data = suggest_feasible_dates(
             patient, surgery_list, operating_rooms, surgeon_list
         )
         if timeslots_data is None:
-            logger.critical("Failed to schedule ❌")
-            failed_to_schedule = True
-            return False
-        selected_timeslot = choice(timeslots_data)
-        room = selected_timeslot[0]
-        best_slot = selected_timeslot[1]
-        timeslot = selected_timeslot[2]
-        surgeon_name = selected_timeslot[3]
-        operating_room = get_operating_room_by_name(room.id, operating_rooms)
-        schedule_patient_to_timeslot(
-            patient,
-            best_slot,
-            timeslot,
-            operating_room,
-            surgery_list,
-            surgeon_name,
-            surgeon_list,
-        )
-        logger.info(f"Scheduled patient {idx + 1} at {best_slot}")
+            logger.critical(f"Failed to schedule patient {idx + 1} who had a priority of {patient.priority}❌")
+            failed_to_schedule += 1
+        else:
+            selected_timeslot = choice(timeslots_data)
+            room = selected_timeslot[0]
+            best_slot = selected_timeslot[1]
+            timeslot = selected_timeslot[2]
+            surgeon_name = selected_timeslot[3]
+            operating_room = get_operating_room_by_name(room.id, operating_rooms)
+            schedule_patient_to_timeslot(
+                patient,
+                best_slot,
+                timeslot,
+                operating_room,
+                surgery_list,
+                surgeon_name,
+                surgeon_list,
+            )
+            logger.info(f"Scheduled patient {idx + 1} at {best_slot}")
 
-    if not failed_to_schedule:
-        export_schedule_as_excel(
-            operating_rooms,
-            export_dir / f"automated_schedule_{automation_index + 1}.xlsx",
+    export_schedule_as_excel(
+        operating_rooms,
+        export_dir / f"automated_schedule_{automation_index + 1}.xlsx",
+    )
+    logger.info("Exported schedule ✅")
+    if failed_to_schedule:
+        logger.info(
+            f"Failed to schedule {failed_to_schedule} patients 😢"
         )
-        logger.info("Exported schedule ✅")
-        return True
+    return failed_to_schedule
 
 
 if __name__ == "__main__":
@@ -161,17 +167,17 @@ if __name__ == "__main__":
     for filepath in file_list:
         os.remove(filepath)
 
-    success_rate_vec = list()
+    failiure_vec = list()
     for automation_index in range(num_runs):
-        ret = run_automation_cycle(automation_index)
-        success_rate_vec.append(ret)
+        amt_failed_to_schedule = run_automation_cycle(automation_index)
+        failiure_vec.append(amt_failed_to_schedule)
     file_list = glob.glob("validation/*")
 
     utilization_data = dict()
     days_used = dict()
 
     logger.info(
-        f"Succeeded in {sum(success_rate_vec)} out of {len(success_rate_vec)} scheduling attempts"
+        f"Average amount of patients we failed to schedule is: {np.mean(failiure_vec)}"
     )
 
     for result_index, path in enumerate(file_list):
