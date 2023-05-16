@@ -6,6 +6,8 @@ from random import choice
 import numpy as np
 import pandas as pd
 from loguru import logger
+import warnings
+
 
 from operank_scheduling.algo.patient_assignment import (
     sort_patients_by_priority_and_duration,
@@ -60,7 +62,9 @@ def export_schedule_as_excel(operating_rooms, filepath=None):
                     "Surgery": patient.surgery_name,
                     "Surgeon": event.surgeon,
                 }
-                df = df.append(surgery_data, ignore_index=True)
+                with warnings.catch_warnings():
+                    warnings.simplefilter("ignore", category=FutureWarning)
+                    df = df.append(surgery_data, ignore_index=True)
     df.sort_values(by=["Date"], inplace=True)
     if filepath is not None:
         df.to_excel(f"{filepath}", sheet_name="OR Schedule")
