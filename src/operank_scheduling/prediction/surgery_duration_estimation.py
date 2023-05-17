@@ -26,9 +26,6 @@ def estimate_surgery_durations(patient_data: pd.DataFrame) -> pd.DataFrame:
     patient_data_to_modify["age"] = patient_data_to_modify.apply(
         lambda row: age_bin(row["age"]), axis=1
     )
-    patient_data_to_modify["Duration"] = patient_data_to_modify.apply(
-        lambda row: duration_bin(row["Duration"]), axis=1
-    ).astype("category")
 
     patient_data_to_modify["Surgery"] = patient_data_to_modify.apply(
         lambda row: surgery_to_category[row["Surgery"]], axis=1
