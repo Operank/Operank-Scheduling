@@ -1,13 +1,13 @@
 import datetime
 import glob
 import os
+import warnings
 from random import choice
 
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from loguru import logger
-import warnings
-
 
 from operank_scheduling.algo.patient_assignment import (
     sort_patients_by_priority_and_duration,
@@ -16,7 +16,11 @@ from operank_scheduling.algo.patient_assignment import (
 from operank_scheduling.algo.surgery_distribution_models import (
     perform_preliminary_scheduling,
 )
-from operank_scheduling.automation.metrics import get_average_utilization, get_days_used
+from operank_scheduling.automation.metrics import (
+    get_average_utilization,
+    get_days_used,
+    get_priority_adherence,
+)
 from operank_scheduling.models.io_utilities import find_project_root
 from operank_scheduling.models.operank_models import (
     Timeslot,
@@ -74,6 +78,10 @@ def export_schedule_as_excel(operating_rooms, filepath=None):
 
 root_dir = find_project_root()
 export_dir = root_dir / "validation"
+priority_x_axes = list()
+priority_y_axes = list()
+full_x = list()
+full_y = list()
 
 
 def run_automation_cycle(automation_index: int):
@@ -125,7 +133,9 @@ def run_automation_cycle(automation_index: int):
             patient, surgery_list, operating_rooms, surgeon_list
         )
         if timeslots_data is None:
-            logger.critical(f"Failed to schedule patient {idx + 1} who had a priority of {patient.priority}❌")
+            logger.critical(
+                f"Failed to schedule patient {idx + 1} who had a priority of {patient.priority}❌"
+            )
             failed_to_schedule += 1
         else:
             selected_timeslot = choice(timeslots_data)
@@ -150,15 +160,20 @@ def run_automation_cycle(automation_index: int):
         export_dir / f"automated_schedule_{automation_index + 1}.xlsx",
     )
     logger.info("Exported schedule ✅")
+
+    priority_x, priority_y, full_x_out, full_y_out = get_priority_adherence(patient_list, surgery_list)
+    priority_x_axes.append(priority_x)
+    priority_y_axes.append(priority_y)
+    full_x.append(full_x_out)
+    full_y.append(full_y_out)
+
     if failed_to_schedule:
-        logger.info(
-            f"Failed to schedule {failed_to_schedule} patients 😢"
-        )
+        logger.info(f"Failed to schedule {failed_to_schedule} patients 😢")
     return failed_to_schedule
 
 
 if __name__ == "__main__":
-    num_runs = 5
+    num_runs = 2
 
     root_dir / "validation/*"
     # Remove previous contents of dir:
@@ -194,3 +209,11 @@ if __name__ == "__main__":
         f"Mean days used: {mean_days_used:.2f}, "
         f"Distribution per run: {list(days_used.values())}"
     )
+
+    for index, axes in enumerate(zip(priority_x_axes, priority_y_axes)):
+        plt.plot(*axes, label=f"Run #{index + 1}")
+    for index, axes in enumerate(zip(full_x, full_y)):
+        plt.scatter(*axes, label=f"Run #{index + 1}")
+    plt.legend()
+    plt.show()
+    pass
