@@ -179,6 +179,9 @@ class Surgeon:
     ) -> Union[datetime.datetime, None]:
         current_date = date_and_time.date()
         for availability_slot in self.availability[current_date]:
+            # Check if the requested time is within the availability slot:
+            if not (date_and_time.time() >= availability_slot[0]) or not (date_and_time.time() <= availability_slot[0]):
+                continue
             window_start_time = date_and_time
             window_end_time = datetime.datetime.combine(current_date, availability_slot[1])
             if (
@@ -199,17 +202,18 @@ class Surgeon:
         for slot in self.availability[date]:
             window_start_time = datetime.datetime.combine(date, slot[0])
             window_end_time = datetime.datetime.combine(date, slot[1])
-            if (
-                window_start_time + datetime.timedelta(minutes=surgery.duration)
-                <= window_end_time
-            ):
-                new_slot_start_time = window_start_time + datetime.timedelta(
-                    minutes=surgery.duration
-                )
-                # Set the slot to start after the surgery we just scheduled
-                slot[0] = new_slot_start_time.time()
-                break
-        self.scheduled_operations += 1
+            if (surgery_time >= window_start_time) and (surgery_time <= window_end_time):
+                if (
+                    window_start_time + datetime.timedelta(minutes=surgery.duration)
+                    <= window_end_time
+                ):
+                    new_slot_start_time = window_start_time + datetime.timedelta(
+                        minutes=surgery.duration
+                    )
+                    # Set the slot to start after the surgery we just scheduled
+                    slot[0] = new_slot_start_time.time()
+                    self.scheduled_operations += 1
+                    break
 
 
 def get_all_surgeons() -> List[Surgeon]:
