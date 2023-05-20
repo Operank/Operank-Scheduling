@@ -162,6 +162,7 @@ def find_suitable_timeslots(
                     if surgeon.is_available_at(day)
                 ]
                 for surgeon in available_surgeons:
+                    # TODO: Rename function!!
                     earliest_timeslot = surgeon.is_surgeon_available_at(
                         room.available_time[day], procedure.duration
                     )
