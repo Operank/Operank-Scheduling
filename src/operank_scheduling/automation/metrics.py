@@ -2,7 +2,6 @@ from typing import List, Tuple
 
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
 from operank_scheduling.models.operank_models import get_surgery_by_patient
 
 from operank_scheduling.models.operank_models import Patient, Surgery
