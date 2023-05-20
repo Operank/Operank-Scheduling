@@ -2,6 +2,7 @@ from ortools.sat.python import cp_model
 
 from typing import Dict, List, Any
 from loguru import logger
+import numpy as np
 
 from .algo_helpers import lazy_permute
 from .intermediate_solutions_cb import SurgeryToRoomSolutionCallback
@@ -21,6 +22,9 @@ def restructure_data(
     model_data["timeslot_durations"] = [timeslot.duration for timeslot in timeslots]
     model_data["timeslots"] = list(range(len(model_data["timeslot_durations"])))
     model_data["rooms"] = list(range(operating_rooms_amt))
+    model_data["weekly_room_availability"] = [
+        (7 - len(room.non_working_days)) for room in rooms
+    ]
     model_data["num_premutations"] = len(lazy_permute(model_data["rooms"]))
 
     model_data["max_total_duration"] = (
@@ -60,12 +64,28 @@ def distribute_timeslots_to_operating_rooms(
         )
 
     for j in data["rooms"]:
-        model.Add(total_room_duration(j) <= data["max_total_duration"])
+        model.Add(
+            total_room_duration(j)
+            <= data["max_total_duration"] * data["weekly_room_availability"][j]
+        )
+
+    room_durartions_normalized = list()
+
+    for j in data["rooms"]:
+        room_durartions_normalized.append(
+            model.NewIntVar(0, MAX_VAL_LIM, f"norm_room_{j}")
+        )
+        model.AddDivisionEquality(
+            room_durartions_normalized[j],
+            total_room_duration(j),
+            data["weekly_room_availability"][j],
+        )
 
     abs_losses = []
 
     def total_room_duration_differences():
-        total_room_durations = [total_room_duration(room) for room in data["rooms"]]
+        # total_room_durations = [total_room_duration(room) for room in data["rooms"]]
+        total_room_durations = room_durartions_normalized
         all_perms = lazy_permute(total_room_durations)
         for idx, permutation in enumerate(all_perms):
             difference = model.NewIntVar(
@@ -84,7 +104,7 @@ def distribute_timeslots_to_operating_rooms(
     solution_cb = SurgeryToRoomSolutionCallback(data, timeslots, rooms, x)
     solver.parameters.enumerate_all_solutions = True
     # solver.parameters.max_time_in_seconds = 10.0 * 60
-    solver.parameters.max_time_in_seconds = 10.0
+    solver.parameters.max_time_in_seconds = 30.0
     # solver.parameters.num_search_workers = 4
     logger.warning(
         f"Set max solve time to be: {solver.parameters.max_time_in_seconds} [s]"
@@ -117,6 +137,29 @@ def distribute_timeslots_to_operating_rooms(
             f"The problem does not have an optimal solution.\n"
             f"The solution status was deemed {solver.StatusName(status)}"
         )
+
+
+def weighted_round_robin_surgery_to_room(
+    timeslots: List[Timeslot], rooms: List[OperatingRoom]
+) -> Dict[OperatingRoom, List[Timeslot]]:
+    room_to_timeslot = {room: list() for room in rooms}
+
+    room_availability = {room: (7 - len(room.non_working_days)) for room in rooms}
+    current_room = 0
+    assigned_to_room = 0
+    for timeslot in timeslots:
+        if assigned_to_room < room_availability[rooms[current_room]]:
+            room_to_timeslot[rooms[current_room]].append(timeslot)
+            assigned_to_room += 1
+        else:
+            current_room = (current_room + 1) % len(rooms)
+            assigned_to_room = 0
+
+    normalized_room_durations = dict()
+    for room in room_to_timeslot:
+        room.timeslots_to_schedule.extend(room_to_timeslot[room])
+        normalized_room_durations[room] = sum([ts.duration for ts in room_to_timeslot[room]]) / room_availability[room]
+    return room_to_timeslot
 
 
 def restructure_day_optimization_data(room: OperatingRoom, work_day_in_minutes=480):
@@ -201,9 +244,19 @@ def perform_preliminary_scheduling(
     timeslot_list: List[Timeslot], operating_rooms: List[OperatingRoom]
 ):
     # if len(timeslot_list) <= len(operating_rooms):
-        # We have too few surgeries to schedule, or too many rooms as options
-    max_rooms = min(len(timeslot_list) // 4, len(operating_rooms))
-    operating_rooms = operating_rooms[:max_rooms]
+    # We have too few surgeries to schedule, or too many rooms as options
+
+    total_surgery_duration = np.sum([slot.duration for slot in timeslot_list])
+    workdays_required = total_surgery_duration / 480
+
+    if np.ceil(workdays_required) < len(operating_rooms):
+        max_rooms = np.round(workdays_required)
+    else:
+        max_rooms = len(operating_rooms)
+
+    # max_rooms = min(len(timeslot_list) // 6, len(operating_rooms))
+    operating_rooms = operating_rooms[: int(max_rooms)]
     logger.debug(f"Actually using {max_rooms} rooms")
-    distribute_timeslots_to_operating_rooms(timeslot_list, operating_rooms)
+    weighted_round_robin_surgery_to_room(timeslot_list, operating_rooms)
+    # distribute_timeslots_to_operating_rooms(timeslot_list, operating_rooms)
     distribute_timeslots_to_days(operating_rooms)

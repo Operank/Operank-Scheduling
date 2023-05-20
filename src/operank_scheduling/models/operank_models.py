@@ -207,6 +207,7 @@ class Surgeon:
                 )
                 # Set the slot to start after the surgery we just scheduled
                 slot[0] = new_slot_start_time.time()
+                break
 
 
 def get_all_surgeons() -> List[Surgeon]:
