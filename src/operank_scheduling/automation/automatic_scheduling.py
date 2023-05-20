@@ -93,33 +93,39 @@ def run_automation_cycle(automation_index: int):
     load_surgeon_schedules(surgeon_list)
 
     # Load patients from file
-    patients_file = root_dir / "assets" / "test_30.xlsx"
+    patients_file = root_dir / "assets" / "test_full_data.xlsx"
+    # patients_file = root_dir / "assets" / "test_30.xlsx"
+    # patients_file = root_dir / "assets" / "test_fake_data_january.xlsx"
     operating_room_file = root_dir / "assets" / "example_operating_room_schedule.json"
+    # operating_room_file = root_dir / "assets" / "extended_operating_room_schedule.json"
     patient_list, surgery_list, timeslot_list = load_patients_from_excel(patients_file)
     operating_rooms = load_operating_rooms_from_json(operating_room_file, mode="path")
     patient_list = sort_patients_by_priority_and_duration(patient_list)
 
     # TODO: Consider adding timeslots here
-    timeslot_list.extend(
-        [
-            Timeslot(180),
-            # Timeslot(180),
-            # Timeslot(180),
-            # Timeslot(180),
-            # Timeslot(180),
-            # Timeslot(180),
-            Timeslot(120),
-            # Timeslot(120),
-            # Timeslot(120),
-            # Timeslot(120),
-            # Timeslot(120),
-            # Timeslot(120),
-            Timeslot(60),
-            # Timeslot(60),
-            # Timeslot(60),
-            # Timeslot(60),
-        ]
-    )
+    timeslot_list.extend([Timeslot(180) for _ in range(len(patient_list) // 3)])
+    # timeslot_list.extend([Timeslot(120) for _ in range(len(patient_list) // 10)])
+    # timeslot_list.extend([Timeslot(60) for _ in range(len(patient_list) // 10)])
+    # timeslot_list.extend(
+    #     [
+    #         Timeslot(180),
+    #         Timeslot(180),
+    #         Timeslot(180),
+    #         Timeslot(180),
+    #         Timeslot(180),
+    #         Timeslot(180),
+    #         Timeslot(120),
+    #         Timeslot(120),
+    #         Timeslot(120),
+    #         Timeslot(120),
+    #         Timeslot(120),
+    #         Timeslot(120),
+    #         Timeslot(60),
+    #         Timeslot(60),
+    #         Timeslot(60),
+    #         Timeslot(60),
+    #     ]
+    # )
     logger.warning("Added extra timeslots!!!!")
 
     # Do preliminary scheduling
@@ -173,7 +179,7 @@ def run_automation_cycle(automation_index: int):
 
 
 if __name__ == "__main__":
-    num_runs = 2
+    num_runs = 1
 
     root_dir / "validation/*"
     # Remove previous contents of dir:
