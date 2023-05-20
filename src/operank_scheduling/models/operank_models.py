@@ -152,6 +152,7 @@ class Surgeon:
         self.occupied_times: Dict[
             datetime.date, List[Tuple[Surgery, datetime.datetime]]
         ] = dict()
+        self.scheduled_operations = 0
 
     def __repr__(self) -> str:
         return f"{self.name}"
@@ -207,6 +208,7 @@ class Surgeon:
                 )
                 # Set the slot to start after the surgery we just scheduled
                 slot[0] = new_slot_start_time.time()
+        self.scheduled_operations += 1
 
 
 def get_all_surgeons() -> List[Surgeon]:
@@ -242,7 +244,7 @@ def get_surgery_by_patient(patient: Patient, surgeries: List[Surgery]):
             return surgery
 
 
-def get_surgeon_by_name(name: str, surgeons: List[Surgeon]):
+def get_surgeon_by_name(name: str, surgeons: List[Surgeon]) -> Surgeon:
     for surgeon in surgeons:
         if name == surgeon.name:
             return surgeon
