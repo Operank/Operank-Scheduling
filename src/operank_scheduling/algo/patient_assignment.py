@@ -11,6 +11,7 @@ from ..models.operank_models import (
     Surgery,
     Timeslot,
     get_all_surgeons,
+    get_surgeon_by_name,
 )
 
 from random import choice
@@ -117,6 +118,22 @@ def remove_duplicate_suggestions(
     return final_suggestions
 
 
+def get_more_free_surgeons(
+    suggestions: List[Tuple[OperatingRoom, datetime.datetime, Timeslot, str]],
+    surgeons: List[Surgeon],
+):
+    surgeon_scheduling_frequency = list()
+    for slot in suggestions:
+        surgeon = get_surgeon_by_name(slot[3], surgeons)
+        surgeon_scheduling_frequency.append(surgeon.scheduled_operations)
+    minimal_frequency = min(surgeon_scheduling_frequency)
+    return [
+        suggestion
+        for suggestion in suggestions
+        if get_surgeon_by_name(suggestion[3], surgeons).scheduled_operations == minimal_frequency
+    ]
+
+
 def find_suitable_timeslots(
     procedure: Surgery,
     suitable_rooms: List[OperatingRoom],
@@ -170,6 +187,12 @@ def find_suitable_timeslots(
     else:
         # Remove "duplicates"
         suitable_timeslots = remove_duplicate_suggestions(suitable_timeslots)
+        # Find surgeons with minimal number of already-scheduled-operations
+        # and prefer them
+        suitable_timeslots = get_more_free_surgeons(
+            suitable_timeslots, suitable_surgeons
+        )
+
         minimal_timeslot = min(suitable_timeslots, key=lambda x: x[2].duration)
         suitable_minimal_timeslots = [
             timeslot
