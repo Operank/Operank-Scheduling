@@ -99,6 +99,7 @@ class Patient:
         self.phone_number = phone_number
         self.uuid = uuid
         self.is_scheduled = False
+        self.is_skipped = False
 
     def mark_as_done(self):
         self.is_scheduled = True

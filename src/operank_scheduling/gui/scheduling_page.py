@@ -2,6 +2,7 @@ import datetime
 from typing import Callable, List, Tuple
 
 from nicegui import ui
+from loguru import logger
 
 from operank_scheduling.algo.patient_assignment import suggest_feasible_dates
 from operank_scheduling.gui.theme import AppTheme
@@ -22,15 +23,22 @@ def fetch_valid_timeslots(patient: Patient, app_state: AppState):
     timeslots_data = suggest_feasible_dates(
         patient, surgery_list, operating_rooms, surgeons
     )
+    if timeslots_data is None:
+        return None
     return [(slot[0].id, slot[1], slot[2], slot[3]) for slot in timeslots_data]
 
 
 class PatientSchedulingScreen:
-    def __init__(
-        self, app_state: AppState, patient_index: int, refresh_function: Callable
-    ) -> None:
-        patient = app_state.patients[patient_index]
+    def __init__(self, app_state: AppState, refresh_function: Callable) -> None:
+        patient = app_state.patients[
+            app_state.current_patient_idx % len(app_state.patients)
+        ]
         available_slots = fetch_valid_timeslots(patient, app_state)
+        if available_slots is None:
+            patient.is_skipped = True
+            logger.debug(f"Skipping patient {patient.name}")
+            app_state.current_patient_idx += 1
+            refresh_function("reset")
 
         with ui.card().classes("m-auto").style("max-width: 1200px; min-width: 1000px"):
             with ui.card().classes("m-auto w-full"):
@@ -120,8 +128,12 @@ class DateSelectionCard(ui.card):
             self.surgeon_name,
             self.app_state.surgeons,
         )
-        ui.notify(f"Scheduled {self.patient.name} for {self.slot_date}", closeBtn=True)
-        self.app_state.patients.remove(self.patient)
+        ui.notify(
+            f"Scheduled {self.patient.name} for {self.slot_date}",
+            closeBtn=True,
+            position="bottom-right",
+        )
+        self.patient.mark_as_done()
         self.app_state.num_scheduled_patients += 1
         self.classes(add="bg-green-400")
         self.update_callback("reset")
@@ -170,18 +182,28 @@ class PatientSchedulingUI:
         self.patients_to_schedule = len(self.app_state.patients)
         self.display_patient_scheduling_ui()
 
-    def draw_inner_ui(self, app_state: AppState, patient_index: int):
+    def draw_inner_ui(self, app_state: AppState):
         with self.app_state.canvas.classes("items-center"):
-            if self.app_state.num_scheduled_patients == self.patients_to_schedule:
+            done_patients = [
+                1
+                for patient in self.app_state.patients
+                if (patient.is_scheduled or patient.is_skipped)
+            ]
+            if sum(done_patients) == self.patients_to_schedule:
                 self.app_state.current_screen = UIScreen.ROOM_SCHEDULE_DISPLAY
                 self.state_update_cb()
             else:
+                # Find patient that wasn't scheduled
+                for index, patient in enumerate(self.app_state.patients):
+                    if not (patient.is_scheduled or patient.is_skipped):
+                        break
+                self.app_state.current_patient_idx = index
                 with ui.row():
                     ArrowNavigationControls(
                         direction="left", state_func=self.update_app_state
                     )
                     PatientSchedulingScreen(
-                        app_state, patient_index, refresh_function=self.update_app_state
+                        app_state, refresh_function=self.update_app_state
                     )
                     ArrowNavigationControls(
                         direction="right", state_func=self.update_app_state
@@ -197,17 +219,17 @@ class PatientSchedulingUI:
 
     def display_patient_scheduling_ui(self):
         self.app_state.canvas.clear()
-        self.draw_inner_ui(
-            self.app_state,
-            self.app_state.current_patient_idx % self.patients_to_schedule,
-        )
+        try:
+            self.draw_inner_ui(self.app_state)
+        except Exception as e:
+            logger.warning(f"❌ {e} : [TODO: Address skips correctly in GUI]")
 
-    def update_app_state(self, direction: str = ""):
+    def update_app_state(self, direction: str = "reset"):
         if direction == "up":
             self.app_state.current_patient_idx += 1
         elif direction == "down":
             self.app_state.current_patient_idx -= 1
         elif direction == "reset":
-            self.app_state.current_patient_idx = 0
+            pass
 
         self.display_patient_scheduling_ui()
