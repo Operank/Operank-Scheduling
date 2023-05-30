@@ -59,10 +59,9 @@ class SetupPage:
             patient_list, surgery_list, timeslot_list = load_patients_from_json(
                 file_content, mode="stream"
             )
-        timeslot_list.extend(
-            [Timeslot(360), Timeslot(180), Timeslot(90), Timeslot(120)]
-        )
-        logger.warning("Added extra timeslots!!!!")
+
+        timeslot_list.extend([Timeslot(180) for _ in range(len(patient_list) // 2)])
+        logger.warning("🛠 Added extra timeslots!!!!")
         patient_list = sort_patients_by_priority_and_duration(patient_list)
         self.app_state.patients = patient_list
         self.app_state.surgeries = surgery_list
