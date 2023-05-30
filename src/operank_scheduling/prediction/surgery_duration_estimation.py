@@ -21,20 +21,28 @@ with open(root_dir / "assets" / "surgery_to_category.json", "r") as rfp:
     surgery_to_category = json.load(rfp)
 
 
+def convert_columns_to_lowercase(in_df: pd.DataFrame) -> None:
+    columns = list(in_df.columns)
+    col_lut = {col: col.lower() for col in columns}
+    in_df.rename(columns=col_lut, inplace=True)
+
+
 def estimate_surgery_durations(patient_data: pd.DataFrame) -> pd.DataFrame:
     patient_data_to_modify = pd.DataFrame.copy(patient_data)
+    convert_columns_to_lowercase(patient_data_to_modify)
+    if "gender_clean" not in list(patient_data_to_modify.columns):
+        patient_data_to_modify.rename(columns={"gender" : "gender_clean"}, inplace=True)
     patient_data_to_modify["age"] = patient_data_to_modify.apply(
         lambda row: age_bin(row["age"]), axis=1
     )
 
-    patient_data_to_modify["Surgery"] = patient_data_to_modify.apply(
-        lambda row: surgery_to_category[row["Surgery"]], axis=1
+    patient_data_to_modify["surgery"] = patient_data_to_modify.apply(
+        lambda row: surgery_to_category[(row["surgery"]).upper()], axis=1
     )
     patient_data_to_modify["gender_clean"] = patient_data_to_modify.apply(
         lambda row: gender_category([row["gender_clean"]]), axis=1
     )
-    model_data = patient_data_to_modify[["gender_clean", "age", "Surgery"]]
-    model_data.rename(columns={"Surgery": "surgery"}, inplace=True)
+    model_data = patient_data_to_modify[["gender_clean", "age", "surgery"]]
     logger.debug("Estimating surgery durations...")
     predicted_duration_categories = model.predict(xgb.DMatrix(model_data))
     surgery_durations = [
