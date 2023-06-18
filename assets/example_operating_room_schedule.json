@@ -1,0 +1,122 @@
+{
+    "operating_rooms" : [
+        {
+            "id" : "01-110WR",
+            "schedule" : {
+                "Tuesday" : "08:00-15:00"
+            }
+        },
+    
+        {
+            "id" : "01-103WR",
+            "schedule" : {
+                "Tuesday" : "08:00-15:00"
+            }
+        },
+    
+        {
+            "id" : "01-102PZ",
+            "schedule" : {
+                "Sunday" : "08:00-15:00",
+                "Monday" : "08:00-15:00",
+                "Tuesday" : "08:00-15:00",
+                "Wednesday" : "08:00-15:00",
+                "Thursday" : "08:00-15:00"
+            }
+        },
+		
+		{
+            "id" : "01-103PZ",
+            "schedule" : {
+                "Tuesday" : "08:00-15:00",
+                "Wednesday" : "08:00-15:00",
+                "Thursday" : "08:00-15:00"
+            }
+        },
+    
+        {
+            "id" : "01-104PZ",
+            "schedule" : {
+                "Sunday" : "08:00-15:00",
+				"Monday" : "08:00-15:00",
+				"Tuesday" : "08:00-15:00",
+                "Wednesday" : "08:00-15:00",
+                "Thursday" : "08:00-15:00"
+            }
+        },
+    
+        {
+            "id" : "01-106PZ",
+            "schedule" : {
+                "Thursday" : "08:00-15:00"
+            }
+        },
+    
+        {
+            "id" : "01-109PZ",
+            "schedule" : {
+                "Wednesday" : "08:00-15:00"
+            }
+        },
+    
+        {
+            "id" : "01-111PZ",
+            "schedule" : {
+                "Sunday" : "08:00-15:00",
+				"Tuesday" : "08:00-15:00"
+            }
+        },
+    
+        {
+            "id" : "01-112PZ",
+            "schedule" : {
+                "Tuesday" : "08:00-15:00"
+            }
+        },
+    
+        {
+            "id" : "4B",
+            "schedule" : {
+                "Monday" : "08:00-15:00",
+                "Wednesday" : "08:00-15:00"
+            }
+        },
+    
+        {
+            "id" : "5B",
+            "schedule" : {
+                "Thursday" : "08:00-15:00",
+                "Sunday" : "08:00-15:00"
+
+            }
+        },
+    
+        {
+            "id" : "6B",
+            "schedule" : {
+                "Sunday" : "08:00-15:00",
+                "Monday" : "08:00-15:00",
+                "Thursday" : "08:00-15:00"
+            }
+        },
+    
+        {
+            "id" : "7B",
+            "schedule" : {
+                "Tuesday" : "08:00-15:00",
+                "Wednesday" : "08:00-15:00",
+                "Thursday" : "08:00-15:00"
+            }
+        },
+    
+        {
+            "id" : "17B",
+            "schedule" : {
+                "Monday" : "08:00-15:00",
+                "Tuesday" : "08:00-15:00",
+                "Sunday" : "08:00-15:00"
+            }
+        }
+    ]
+    
+}
