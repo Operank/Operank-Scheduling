@@ -35,7 +35,7 @@ pip install -r requirements.txt
 
 The code can now be edited, with changes being reflected immediately.
 
-## Additional Assets
+## 📑 Additional Assets
 Some hospital-specific assets are needed for the program to run, including the surgeon schedules and some patients.
 
 An example of all these assets can be found in the [following link](https://drive.google.com/file/d/1MYzh3KfzBntz8F8Gp7heoMNBkF-xx4bU/view?usp=sharing).
@@ -46,4 +46,4 @@ The package also contains unit tests for some of the functionality of the system
 
 # Open Source Compliance
 
-A list of all dependencies and their licenses are given in the file `THIRDPARTYLICENSES`.
+A list of all dependencies and their licenses are given in the `THIRDPARTYLICENSES` file.
