@@ -3,9 +3,15 @@
 # Overview
 **Operank Scheduling** is a system for scheduling patients' surgeries, while optimizing the hospital's timetable. 
 
-The system was developed as part of a final project in Electrical Engineering, Tel-Aviv University, in collaboration with the Tel-Aviv 'Souraski' Medical Center (Ichilov Hospital).
+The system was developed as part of a final project in Electrical and Electronics Engineering, Tel-Aviv University, in collaboration with the Tel-Aviv 'Souraski' Medical Center (Ichilov Hospital).
 
-Using an XGBoost prediction model trained on real data, along with an optimization approach with Google-OR's CP-SAT solver, the system achieved an **increase of 25% in operating room utilization** and a subsequent **increase of 40% in the amount of surgeries scheduled** per unit of time - in comparison with the current schedules of Tel-Aviv 'Souraski' Medical Center.
+Using an XGBoost prediction model trained on real data, along with an optimization approach with Google's `CP-SAT` solver, the system achieved an **increase of 25% in operating room utilization** and a subsequent **increase of 40% in the amount of surgeries scheduled** per unit of time - in comparison with the current schedules of Tel-Aviv 'Souraski' Medical Center.
+
+# Design
+
+The general design is summarized in the following diagram:
+<div align="center"><img width=600 height=300 src="https://i.imgur.com/u3YPw4G.png"></img></div>
+
 
 # Installation
 
