@@ -10,7 +10,9 @@ from operank_scheduling.models.operank_models import (
 )
 
 from .enums import weekdays_to_numbers
-from operank_scheduling.prediction.surgery_duration_estimation import estimate_surgery_durations
+from operank_scheduling.prediction.surgery_duration_estimation import (
+    estimate_surgery_durations,
+)
 
 """
 Read patient data given in the format:
@@ -78,7 +80,9 @@ def load_patients_from_json(
         all_patients = json.loads(jsonpath)
     full_patient_data = all_patients["patients"]
     patient_data_df = pd.DataFrame.from_dict(full_patient_data)
-    full_patient_data = estimate_surgery_durations(patient_data_df)  # Add estimated duration based on ML model
+    full_patient_data = estimate_surgery_durations(
+        patient_data_df
+    )  # Add estimated duration based on ML model
 
     for single_patient_data in full_patient_data:
         patient, surgery, timeslot = parse_single_json_block(single_patient_data)
@@ -113,6 +117,25 @@ def load_patients_from_excel(
         surgeries.append(surgery)
         timeslots.append(timeslot)
     return patients, surgeries, timeslots
+
+
+def load_operating_room_schedule_from_excel(excelpath: str):
+    or_schedule = pd.read_excel(excelpath)
+    days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday"]
+    rooms_list = list()
+    for _, row in or_schedule.iterrows():
+        room_data = dict()
+        room_schedule = dict()
+        room_data["id"] = row["Room Name"]
+        for day in days:
+            if not pd.isnull(row[day]):
+                room_schedule[day] = row[day]
+        room_data["schedule"] = room_schedule
+        rooms_list.append(room_data)
+
+    output_dict = dict()
+    output_dict["operating_rooms"] = rooms_list
+    return output_dict
 
 
 def find_non_working_days_for_operating_room(schedule: dict) -> List[int]:

@@ -1,4 +1,5 @@
 import datetime
+import json
 from typing import Callable
 
 from loguru import logger
@@ -15,6 +16,7 @@ from operank_scheduling.gui.ui_tables import display_patient_table
 from operank_scheduling.models.operank_models import Timeslot
 from operank_scheduling.models.parse_data_to_models import (
     load_operating_rooms_from_json,
+    load_operating_room_schedule_from_excel,
     load_patients_from_json,
     load_patients_from_excel,
 )
@@ -75,6 +77,7 @@ class SetupPage:
             )
 
         timeslot_list.extend([Timeslot(180) for _ in range(len(patient_list) // 2)])
+        timeslot_list.extend([Timeslot(120) for _ in range(len(patient_list) // 2)])
         logger.warning("🛠 Added extra timeslots!!!!")
         patient_list = sort_patients_by_priority_and_duration(patient_list)
         self.app_state.patients = patient_list
@@ -90,7 +93,12 @@ class SetupPage:
     def handle_operating_room_upload(
         self, upload_event: events.UploadEventArguments
     ) -> None:
-        file_content = upload_event.content.read().decode("utf-8")
+        if upload_event.name.split(".")[-1] == "xlsx":
+            excel_file = upload_event.content.read()
+            or_dict = load_operating_room_schedule_from_excel(excel_file)
+            file_content = json.dumps(or_dict)
+        if upload_event.name.split(".")[-1] == "json":
+            file_content = upload_event.content.read().decode("utf-8")
         self.app_state.rooms = load_operating_rooms_from_json(
             file_content, mode="stream"
         )
