@@ -7,7 +7,6 @@ from operank_scheduling.models.io_utilities import find_project_root
 from operank_scheduling.prediction.categorization import (
     age_bin,
     bin_to_duration,
-    duration_bin,
     gender_category,
 )
 from loguru import logger
