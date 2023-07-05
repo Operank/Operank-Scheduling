@@ -50,7 +50,9 @@ class SetupPage:
                                 "click", lambda: menu.open()
                             ).classes("cursor-pointer")
                         with ui.menu() as menu:
-                            ui.date().bind_value(date).bind_value(self.app_state, 'start_date')
+                            ui.date().bind_value(date).bind_value(
+                                self.app_state, "start_date"
+                            )
 
             ui.label(
                 "When both files have been uploaded, press the button to start scheduling 🚀"
@@ -106,7 +108,11 @@ class SetupPage:
             )
 
             for room in self.app_state.rooms:
-                room.schedule_timeslots_to_days(datetime.datetime.now().date())
+                if self.app_state.start_date is None:
+                    room.schedule_timeslots_to_days(datetime.datetime.now().date())
+                else:
+                    datetime_start_date = datetime.datetime.strptime(self.app_state.start_date, "%Y-%m-%d")
+                    room.schedule_timeslots_to_days(datetime_start_date)
 
             logger.info("Moving to scheduling phase")
             self.app_state.current_screen = UIScreen.SCHEDULING
