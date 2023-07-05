@@ -36,3 +36,4 @@ class AppState:
         self.num_scheduled_patients = 0
         self.canvas = ui.column().classes("m-auto")
         self.current_patient_idx = 0
+        self.start_date = None

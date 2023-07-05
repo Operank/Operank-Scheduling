@@ -4,7 +4,9 @@ from typing import Callable
 from loguru import logger
 from nicegui import events, ui
 
-from operank_scheduling.algo.patient_assignment import sort_patients_by_priority_and_duration
+from operank_scheduling.algo.patient_assignment import (
+    sort_patients_by_priority_and_duration,
+)
 from operank_scheduling.algo.surgery_distribution_models import (
     perform_preliminary_scheduling,
 )
@@ -39,6 +41,16 @@ class SetupPage:
                     ui.upload(on_upload=self.handle_operating_room_upload).props(
                         "accept=.xlsx, .csv, .json"
                     ).classes("max-w-full")
+
+                with ui.card():
+                    ui.label("Select starting date")
+                    with ui.input("Date") as date:
+                        with date.add_slot("append"):
+                            ui.icon("edit_calendar").on(
+                                "click", lambda: menu.open()
+                            ).classes("cursor-pointer")
+                        with ui.menu() as menu:
+                            ui.date().bind_value(date).bind_value(self.app_state, 'start_date')
 
             ui.label(
                 "When both files have been uploaded, press the button to start scheduling 🚀"
@@ -88,7 +100,7 @@ class SetupPage:
             logger.info("Scheduling... ")
             with self.app_state.canvas.classes("items-center"):
                 self.patients_table.clear()
-                ui.spinner(size='5em')
+                ui.spinner(size="5em")
             perform_preliminary_scheduling(
                 self.app_state.timeslots, self.app_state.rooms
             )
