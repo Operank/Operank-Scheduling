@@ -27,6 +27,9 @@ def convert_columns_to_lowercase(in_df: pd.DataFrame) -> None:
 
 
 def estimate_surgery_durations(patient_data: pd.DataFrame) -> pd.DataFrame:
+    """
+    Run all patients through the model and predict the surgery duration.
+    """
     patient_data_to_modify = pd.DataFrame.copy(patient_data)
     convert_columns_to_lowercase(patient_data_to_modify)
     if "gender_clean" not in list(patient_data_to_modify.columns):

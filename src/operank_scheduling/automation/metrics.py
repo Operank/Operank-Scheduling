@@ -11,6 +11,9 @@ workday_length_minutes = 480
 
 
 def get_average_utilization(path):
+    """
+    Calculate the average utilization for all rooms from a timesheet in Excel.
+    """
     system_output = pd.read_excel(path)
     system_output["Duration"] = system_output["End Time"] - system_output["Start Time"]
 
@@ -30,6 +33,9 @@ def get_average_utilization(path):
 
 
 def get_days_used(path):
+    """
+    Calculate the amount of days used to schedule all surgeries, from a timesheet in Excel.
+    """
     system_output = pd.read_excel(path)
     return len(system_output["Date"].unique())
 

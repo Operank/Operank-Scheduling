@@ -1,3 +1,9 @@
+"""
+These conversions must match the ones done on the data that was
+used to train the model.
+"""
+
+
 def duration_bin(x):
     if 0 < x <= 60:
         return 0
