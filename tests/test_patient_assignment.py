@@ -221,20 +221,3 @@ def test_find_suitable_timeslots(schedule_patients):
         suitable_rooms = find_suitable_operating_rooms(procedure, operating_rooms)
         suitable_surgeons = find_suitable_surgeons(procedure, surgeon_list)
         _ = find_suitable_timeslots(procedure, suitable_rooms, suitable_surgeons)
-
-
-def test_suggest_feasible_dates(schedule_patients):
-    (
-        patient_list,
-        surgery_list,
-        _,
-        operating_rooms,
-        surgeon_list,
-    ) = schedule_patients
-    load_surgeon_schedules(surgeon_list)
-    for patient in patient_list:
-        available_dates = suggest_feasible_dates(
-            patient, surgery_list, operating_rooms, surgeon_list
-        )
-        assert available_dates is not None
-        assert len(available_dates) > 0

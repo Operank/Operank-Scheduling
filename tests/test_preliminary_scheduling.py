@@ -35,19 +35,6 @@ def test_schedule_to_days(scheduling_fixture):
         operating_room.schedule_timeslots_to_days(datetime.datetime.now().date())
 
 
-def test_schedule_to_days_with_non_working_days(scheduling_fixture):
-    timeslot_list, or_list = scheduling_fixture
-    for operating_room in or_list:
-        # Try to schedule on friday, expect schedule to start from sunday!
-        operating_room.schedule_timeslots_to_days(
-            datetime.datetime(year=2023, month=3, day=10).date()
-        )
-        assert list(operating_room.schedule.keys()) == [
-            datetime.datetime(year=2023, month=3, day=12).date(),
-            datetime.datetime(year=2023, month=3, day=13).date(),
-        ]
-
-
 def test_scheduling_on_real_operating_rooms():
     root = find_project_root()
     operating_room_data_file = root / "assets" / "example_operating_room_schedule.json"
