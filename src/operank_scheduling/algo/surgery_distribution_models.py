@@ -84,6 +84,12 @@ def distribute_timeslots_to_operating_rooms(
     abs_losses = []
 
     def total_room_duration_differences():
+        """
+        Populate a pre-existing list with the absolute differences between
+        the total surgery duration of each room from one another.
+
+        If the durations for each room were [12, 16, 4] we expect [4, 8]
+        """
         # total_room_durations = [total_room_duration(room) for room in data["rooms"]]
         total_room_durations = room_durartions_normalized
         all_perms = lazy_permute(total_room_durations)
@@ -142,6 +148,11 @@ def distribute_timeslots_to_operating_rooms(
 def weighted_round_robin_surgery_to_room(
     timeslots: List[Timeslot], rooms: List[OperatingRoom]
 ) -> Dict[OperatingRoom, List[Timeslot]]:
+    """
+    Balance timeslots between rooms based on the availability of these rooms.
+    Rooms that are available 5 days a week get x5 the timeslots w.r.t rooms
+    that are available only 1 day a week.
+    """
     room_to_timeslot = {room: list() for room in rooms}
 
     room_availability = {room: (7 - len(room.non_working_days)) for room in rooms}
